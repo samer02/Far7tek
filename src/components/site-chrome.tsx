@@ -1,7 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Heart, Menu, X } from "lucide-react";
+import { ChevronDown, Heart, Menu, UserRound, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
@@ -74,19 +81,29 @@ export function SiteHeader() {
         <div className="nav-shell">
           <Brand onClick={close} />
           <nav className="desktop-nav" aria-label={t("Navigation principale", "Main navigation", "التنقل الرئيسي")}>
-            {links.map((l) => (
+            {links.filter((l) => l.to !== "/reserver" && l.to !== "/compte").map((l) => (
               <Link key={l.to} to={l.to} activeProps={{ "data-active": "true" } as never} activeOptions={{ exact: l.to === "/" }}>
                 {l.label}
               </Link>
             ))}
-            {spaceLinks}
           </nav>
           <div className="nav-tools">
             <LangSwitch />
             <ThemeToggle className="theme" />
             <div className="header-cta action-row">
               {auth?.userId ? (
-                <Button variant="outline" className="ref-btn login-btn" onClick={signOut}>{t("Déconnexion", "Sign out", "خروج")}</Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="ref-btn login-btn"><UserRound />{t("Mon espace", "My account", "حسابي")}<ChevronDown /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="account-menu">
+                    <DropdownMenuItem asChild><Link to="/compte">{t("Mes demandes", "My requests", "طلباتي")}</Link></DropdownMenuItem>
+                    {roles.includes("partner") && <DropdownMenuItem asChild><Link to="/partenaire">{t("Espace partenaire", "Partner area", "فضاء الشريك")}</Link></DropdownMenuItem>}
+                    {roles.includes("admin") && <DropdownMenuItem asChild><Link to="/admin">{t("Administration", "Admin", "الإدارة")}</Link></DropdownMenuItem>}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={signOut}>{t("Déconnexion", "Sign out", "خروج")}</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <Button asChild variant="outline" className="ref-btn login-btn"><Link to="/auth">{t("Connexion", "Sign in", "دخول")}</Link></Button>
               )}

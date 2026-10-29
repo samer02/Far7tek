@@ -213,7 +213,7 @@ html[dir="rtl"] .gold-italic, html[dir="rtl"] .grad-text { font-style: normal; }
 .brand-mark svg { width: 18px; height: 18px; fill: currentColor; }
 .brand-word { font-family: "Fraunces", Georgia, serif; font-size: 23px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; direction: ltr; }
 .brand-word b { background: var(--gradient-primary); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.brand-word small { display: block; font-family: var(--font-arabic); font-size: 12px; font-weight: 500; color: var(--muted-foreground); letter-spacing: 0; margin-top: 4px; direction: rtl; text-align: start; }
+.brand-word small { display: block; font-family: var(--font-arabic); font-size: 12px; font-weight: 500; color: var(--muted-foreground); letter-spacing: 0; margin-top: 5px; text-align: left; }
 .desktop-nav { display: flex; align-items: center; justify-content: center; gap: 2px; flex: 1; min-width: 0; }
 .desktop-nav a { padding: 8px 13px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--muted-foreground); transition: background-color 0.2s, color 0.2s; white-space: nowrap; }
 .desktop-nav a:hover { color: var(--foreground); background: var(--muted); }
@@ -359,6 +359,9 @@ html[dir="rtl"] .car-meta { letter-spacing: 0; }
 .footer-grid h4 { font-family: var(--font-sans); font-size: 13px; font-weight: 700; color: var(--foreground); margin-bottom: 14px; }
 .footer-grid a { display: block; font-size: 14px; margin: 9px 0; color: var(--muted-foreground); }
 .footer-grid a:hover { color: var(--primary); }
+.footer-grid a.brand { display: inline-flex; margin: 0; color: var(--foreground); }
+.account-menu { border-radius: 16px; padding: 6px; min-width: 200px; }
+.account-menu [role="menuitem"] { border-radius: 10px; padding: 9px 12px; font-size: 14px; cursor: pointer; }
 .footer-slogan { font-family: var(--font-arabic); color: var(--primary); font-size: 1.05rem; }
 .footer-bottom { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 20px; font-size: 13px; color: var(--muted-foreground); flex-wrap: wrap; }
 

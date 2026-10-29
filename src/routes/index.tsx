@@ -106,8 +106,8 @@ function Home() {
         <div className="stats-strip">
           <div><strong>3</strong><span>{t("services principaux", "core services", "خدمات رئيسية")}</span></div>
           <div><strong>{cars?.length ?? "—"}</strong><span>{t("véhicules disponibles", "vehicles available", "سيارات متاحة")}</span></div>
-          <div><strong>A/R</strong><span>{t("aller simple ou aller-retour", "one way or round trip", "ذهاب أو ذهاب وإياب")}</span></div>
-          <div><strong>24 h</strong><span>{t("délai de réponse maximum", "maximum reply time", "أقصى مدة للرد")}</span></div>
+          <div><strong><bdi>A/R</bdi></strong><span>{t("aller simple ou aller-retour", "one way or round trip", "ذهاب أو ذهاب وإياب")}</span></div>
+          <div><strong><bdi>24 h</bdi></strong><span>{t("délai de réponse maximum", "maximum reply time", "أقصى مدة للرد")}</span></div>
         </div>
       </div>
 
