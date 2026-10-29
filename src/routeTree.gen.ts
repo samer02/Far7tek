@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReserverRouteImport } from './routes/reserver'
 import { Route as VehiculesIndexRouteImport } from './routes/vehicules.index'
 import { Route as VehiculesSlugRouteImport } from './routes/vehicules.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReserverRoute = ReserverRouteImport.update({
+  id: '/reserver',
+  path: '/reserver',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VehiculesIndexRoute = VehiculesIndexRouteImport.update({
@@ -31,30 +37,34 @@ const VehiculesSlugRoute = VehiculesSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/reserver': typeof ReserverRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules/': typeof VehiculesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/reserver': typeof ReserverRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules': typeof VehiculesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/reserver': typeof ReserverRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules/': typeof VehiculesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/vehicules/$slug' | '/vehicules/'
+  fullPaths: '/' | '/reserver' | '/vehicules/$slug' | '/vehicules/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/vehicules/$slug' | '/vehicules'
-  id: '__root__' | '/' | '/vehicules/$slug' | '/vehicules/'
+  to: '/' | '/reserver' | '/vehicules/$slug' | '/vehicules'
+  id: '__root__' | '/' | '/reserver' | '/vehicules/$slug' | '/vehicules/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ReserverRoute: typeof ReserverRoute
   VehiculesSlugRoute: typeof VehiculesSlugRoute
   VehiculesIndexRoute: typeof VehiculesIndexRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reserver': {
+      id: '/reserver'
+      path: '/reserver'
+      fullPath: '/reserver'
+      preLoaderRoute: typeof ReserverRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vehicules/': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ReserverRoute: ReserverRoute,
   VehiculesSlugRoute: VehiculesSlugRoute,
   VehiculesIndexRoute: VehiculesIndexRoute,
 }
