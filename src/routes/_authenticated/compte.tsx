@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
-import { BOOKING_STATUS, serviceLabel } from "@/lib/platform";
+import { BOOKING_STATUS, HISTORY_STATUS, serviceLabel } from "@/lib/platform";
 import { labelOf, useI18n } from "@/lib/i18n";
 import { StatusPill } from "@/components/site-chrome";
 import { NotificationsPanel } from "@/components/notifications-panel";
@@ -53,7 +53,7 @@ function Account() {
                 <details>
                   <summary className="tile-link cursor-pointer">{t("Historique", "History", "السجل")}</summary>
                   {[...r.trip_status_history].sort((a, b) => a.created_at.localeCompare(b.created_at)).map((h, i) => (
-                    <div key={i} className="note-row"><small>{dateTime(h.created_at)}</small> {st(h.status)} {h.note && `— ${h.note}`}</div>
+                    <div key={i} className="note-row"><small>{dateTime(h.created_at)}</small> {labelOf(HISTORY_STATUS, h.status, lang)} {h.note && `— ${h.note}`}</div>
                   ))}
                 </details>
               </div>

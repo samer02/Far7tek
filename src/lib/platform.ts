@@ -53,6 +53,11 @@ export const BOOKING_STATUS: Record<string, Tri> = {
   completed: ["Terminée", "Completed", "منتهٍ"],
   cancelled: ["Annulée", "Cancelled", "ملغى"],
 };
+/** Labels for the request history timeline (includes internal events). */
+export const HISTORY_STATUS: Record<string, Tri> = {
+  ...BOOKING_STATUS,
+  assigned: ["Attribuée à un chauffeur", "Assigned to a driver", "أُسند إلى سائق"],
+};
 export const PROPOSAL_STATUS: Record<string, Tri> = {
   new: ["Nouveau", "New", "جديد"],
   pending: ["En attente", "Pending", "قيد الانتظار"],
