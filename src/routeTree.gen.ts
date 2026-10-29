@@ -10,7 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DevenirPartenaireRouteImport } from './routes/devenir-partenaire'
+import { Route as ReinitialiserRouteImport } from './routes/reinitialiser'
 import { Route as ReserverRouteImport } from './routes/reserver'
+import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
 import { Route as VehiculesIndexRouteImport } from './routes/vehicules.index'
 import { Route as VehiculesSlugRouteImport } from './routes/vehicules.$slug'
 
@@ -19,10 +24,34 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevenirPartenaireRoute = DevenirPartenaireRouteImport.update({
+  id: '/devenir-partenaire',
+  path: '/devenir-partenaire',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReinitialiserRoute = ReinitialiserRouteImport.update({
+  id: '/reinitialiser',
+  path: '/reinitialiser',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReserverRoute = ReserverRouteImport.update({
   id: '/reserver',
   path: '/reserver',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCompteRoute = AuthenticatedCompteRouteImport.update({
+  id: '/compte',
+  path: '/compte',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const VehiculesIndexRoute = VehiculesIndexRouteImport.update({
   id: '/vehicules/',
@@ -37,33 +66,76 @@ const VehiculesSlugRoute = VehiculesSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/devenir-partenaire': typeof DevenirPartenaireRoute
+  '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
+  '/compte': typeof AuthenticatedCompteRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules/': typeof VehiculesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/devenir-partenaire': typeof DevenirPartenaireRoute
+  '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
+  '/compte': typeof AuthenticatedCompteRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules': typeof VehiculesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/devenir-partenaire': typeof DevenirPartenaireRoute
+  '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
+  '/_authenticated/compte': typeof AuthenticatedCompteRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules/': typeof VehiculesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/reserver' | '/vehicules/$slug' | '/vehicules/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/devenir-partenaire'
+    | '/reinitialiser'
+    | '/reserver'
+    | '/compte'
+    | '/vehicules/$slug'
+    | '/vehicules/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/reserver' | '/vehicules/$slug' | '/vehicules'
-  id: '__root__' | '/' | '/reserver' | '/vehicules/$slug' | '/vehicules/'
+  to:
+    | '/'
+    | '/auth'
+    | '/devenir-partenaire'
+    | '/reinitialiser'
+    | '/reserver'
+    | '/compte'
+    | '/vehicules/$slug'
+    | '/vehicules'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/devenir-partenaire'
+    | '/reinitialiser'
+    | '/reserver'
+    | '/_authenticated/compte'
+    | '/vehicules/$slug'
+    | '/vehicules/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  DevenirPartenaireRoute: typeof DevenirPartenaireRoute
+  ReinitialiserRoute: typeof ReinitialiserRoute
   ReserverRoute: typeof ReserverRoute
   VehiculesSlugRoute: typeof VehiculesSlugRoute
   VehiculesIndexRoute: typeof VehiculesIndexRoute
@@ -78,12 +150,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devenir-partenaire': {
+      id: '/devenir-partenaire'
+      path: '/devenir-partenaire'
+      fullPath: '/devenir-partenaire'
+      preLoaderRoute: typeof DevenirPartenaireRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reinitialiser': {
+      id: '/reinitialiser'
+      path: '/reinitialiser'
+      fullPath: '/reinitialiser'
+      preLoaderRoute: typeof ReinitialiserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reserver': {
       id: '/reserver'
       path: '/reserver'
       fullPath: '/reserver'
       preLoaderRoute: typeof ReserverRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/compte': {
+      id: '/_authenticated/compte'
+      path: '/compte'
+      fullPath: '/compte'
+      preLoaderRoute: typeof AuthenticatedCompteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/vehicules/': {
       id: '/vehicules/'
@@ -102,8 +209,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCompteRoute: typeof AuthenticatedCompteRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCompteRoute: AuthenticatedCompteRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  DevenirPartenaireRoute: DevenirPartenaireRoute,
+  ReinitialiserRoute: ReinitialiserRoute,
   ReserverRoute: ReserverRoute,
   VehiculesSlugRoute: VehiculesSlugRoute,
   VehiculesIndexRoute: VehiculesIndexRoute,
