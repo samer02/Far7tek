@@ -7,3 +7,4 @@
 - [ ] Vérifier les parcours et les formats desktop, tablette et mobile.
 - [ ] Attribuer le premier rôle administrateur après identification du compte autorisé.
 - [ ] Remplacer les photographies reconstituées par les fichiers originaux lorsqu’ils seront fournis.
+- [ ] Nettoyer les migrations copiées et recréer un ensemble vide pour le remix.
