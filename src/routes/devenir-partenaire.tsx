@@ -63,8 +63,8 @@ function PartnerApply() {
     const parsed = schema.safeParse(Object.fromEntries(new FormData(e.currentTarget)));
     const errs: Record<string, string> = {};
     if (!parsed.success) parsed.error.issues.forEach((i) => (errs[i.path[0] as string] = i.message));
-    if (!services.length) errs.services = "Choisissez au moins un service";
-    if (!files.some((f) => f.kind === "main")) errs.files = "La photo principale est requise";
+    if (!services.length) errs["services"] = "Choisissez au moins un service";
+    if (!files.some((f) => f.kind === "main")) errs["files"] = "La photo principale est requise";
     setErrors(errs);
     if (Object.keys(errs).length || !parsed.success) return;
     setBusy(true);

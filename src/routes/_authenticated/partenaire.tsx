@@ -154,12 +154,16 @@ function PartnerVehicle({ uid }: { uid: string }) {
 
   async function submitChange(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const f = Object.fromEntries(new FormData(e.currentTarget)) as any;
+    const fd = new FormData(e.currentTarget);
+    const color = String(fd.get("color") ?? "");
+    const seats = String(fd.get("seats") ?? "");
+    const priceFrom = String(fd.get("price_from") ?? "");
+    const description = String(fd.get("description") ?? "");
     const changes: Record<string, unknown> = {};
-    if (f.color && f.color !== car.color) changes.color = f.color.slice(0, 40);
-    if (f.seats && Number(f.seats) !== car.seats) changes.seats = Math.max(1, Math.min(60, Number(f.seats)));
-    if (f.price_from && Number(f.price_from) !== car.price_from) changes.price_from = Number(f.price_from);
-    if (f.description && f.description !== car.description) changes.description = f.description.slice(0, 2000);
+    if (color && color !== car.color) changes["color"] = color.slice(0, 40);
+    if (seats && Number(seats) !== car.seats) changes["seats"] = Math.max(1, Math.min(60, Number(seats)));
+    if (priceFrom && Number(priceFrom) !== car.price_from) changes["price_from"] = Number(priceFrom);
+    if (description && description !== car.description) changes["description"] = description.slice(0, 2000);
     if (!Object.keys(changes).length) { toast.info("Aucune modification"); return; }
     const { error } = await supabase.from("vehicle_change_requests").insert({ car_id: car.id, partner_id: uid, changes: changes as any });
     if (error) { toast.error("Envoi impossible"); return; }
