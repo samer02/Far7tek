@@ -1,5 +1,5 @@
 # Far7tek
-- [x] Lovable Cloud, tables, rôles sécurisés et espaces médias.
+- [x] Supabase externe, tables, rôles sécurisés et espaces médias.
 - [x] Attribuer le rôle administrateur (admin@gmail.com).
 - [x] Nettoyer les migrations copiées (remix).
 - [x] Corriger les erreurs de compilation.

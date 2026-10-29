@@ -5,7 +5,6 @@ import { useHydrated } from "@/lib/use-hydrated";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import logoFull from "@/assets/far7tek-logo.png";
 import { useI18n } from "@/lib/i18n";
 
@@ -76,9 +75,13 @@ function AuthPage() {
   }
 
   async function google() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" + (redirect ? `?redirect=${encodeURIComponent(redirect)}` : "") });
-    if (r.error) toast.error(t("Connexion Google impossible", "Google sign-in failed", "تعذّر الدخول عبر Google"));
-    else if (!r.redirected) await afterLogin();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/auth" + (redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""),
+      },
+    });
+    if (error) toast.error(t("Connexion Google impossible", "Google sign-in failed", "تعذّر الدخول عبر Google"));
   }
 
   return (
