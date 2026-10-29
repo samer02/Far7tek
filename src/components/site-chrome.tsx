@@ -94,7 +94,7 @@ export function SiteHeader() {
               {auth?.userId ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="ref-btn login-btn"><UserRound />{t("Mon espace", "My account", "حسابي")}<ChevronDown /></Button>
+                    <Button variant="outline" className="ref-btn login-btn" aria-label={t("Mon espace", "My account", "حسابي")}><UserRound /><span className="btn-label">{t("Mon espace", "My account", "حسابي")}</span><ChevronDown className="btn-label" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="account-menu">
                     <DropdownMenuItem asChild><Link to="/compte">{t("Mes demandes", "My requests", "طلباتي")}</Link></DropdownMenuItem>
@@ -105,7 +105,7 @@ export function SiteHeader() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button asChild variant="outline" className="ref-btn login-btn"><Link to="/auth">{t("Connexion", "Sign in", "دخول")}</Link></Button>
+                <Button asChild variant="outline" className="ref-btn login-btn"><Link to="/auth" aria-label={t("Connexion", "Sign in", "دخول")}><UserRound /><span className="btn-label">{t("Connexion", "Sign in", "دخول")}</span></Link></Button>
               )}
               <Button asChild className="ref-btn"><Link to="/reserver">{t("Réserver", "Book now", "احجز الآن")}</Link></Button>
             </div>
