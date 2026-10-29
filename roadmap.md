@@ -8,3 +8,5 @@
 - [ ] Attribuer le premier rôle administrateur après identification du compte autorisé.
 - [ ] Remplacer les photographies reconstituées par les fichiers originaux lorsqu’ils seront fournis.
 - [x] Nettoyer les migrations copiées et recréer un ensemble vide pour le remix.
+
+Les écrans et leurs connexions restent à construire après la réinitialisation du remix ; aucun écran incomplet n’est importé.
