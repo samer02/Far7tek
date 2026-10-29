@@ -10,7 +10,7 @@ import { fetchCars } from "@/lib/cars";
 import { SERVICE_TYPES, VEHICLE_TYPES } from "@/lib/platform";
 
 export const Route = createFileRoute("/reserver")({
-  validateSearch: (s: Record<string, unknown>): { car?: string } => ({ car: typeof s.car === "string" ? s.car : undefined }),
+  validateSearch: (s: Record<string, unknown>): { car?: string } => (typeof s["car"] === "string" ? { car: s["car"] } : {}),
   head: () => ({
     meta: [
       { title: "Réserver une voiture avec chauffeur — Cortège & Cérémonie" },
@@ -63,7 +63,7 @@ function Booking() {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const raw = Object.fromEntries(new FormData(e.currentTarget));
-    if (service === "round_trip") raw.trip_type = "round_trip";
+    if (service === "round_trip") raw["trip_type"] = "round_trip";
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
       setErrors(Object.fromEntries(parsed.error.issues.map((i) => [i.path[0], i.message])));
@@ -76,7 +76,7 @@ function Booking() {
       .from("booking_requests")
       .insert({
         ...d,
-        return_time: d.trip_type === "round_trip" ? d.return_time : null,
+        return_time: d.trip_type === "round_trip" ? (d.return_time ?? null) : null,
         car_name: d.car_name || "Sans préférence",
         car_id: cars?.find((c) => c.name === d.car_name)?.id ?? null,
         email: auth!.email ?? "",

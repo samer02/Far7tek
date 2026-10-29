@@ -113,6 +113,6 @@ export function SiteFooter() {
   );
 }
 
-export function StatusPill({ label }: { label: string }) {
-  return <span className="status-ref">{label}</span>;
+export function StatusPill({ label }: { label?: string | undefined }) {
+  return <span className="status-ref">{label ?? ""}</span>;
 }

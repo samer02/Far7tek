@@ -27,12 +27,12 @@ function ResetPage() {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const p = String(f.get("password")), c = String(f.get("confirm"));
-    if (p.length < 8) return toast.error("8 caractères minimum");
-    if (p !== c) return toast.error("Les mots de passe ne correspondent pas");
+    if (p.length < 8) { toast.error("8 caractères minimum"); return; }
+    if (p !== c) { toast.error("Les mots de passe ne correspondent pas"); return; }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password: p });
     setBusy(false);
-    if (error) return toast.error("Lien expiré ou invalide. Demandez un nouveau lien depuis la page de connexion.");
+    if (error) { toast.error("Lien expiré ou invalide. Demandez un nouveau lien depuis la page de connexion."); return; }
     toast.success("Mot de passe enregistré");
     await qc.invalidateQueries({ queryKey: ["auth"] });
     navigate({ to: "/auth" });

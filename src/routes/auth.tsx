@@ -7,9 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({
-    redirect: typeof s.redirect === "string" && s.redirect.startsWith("/") && !s.redirect.startsWith("//") ? s.redirect : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { redirect?: string } => {
+    const r = s["redirect"];
+    return typeof r === "string" && r.startsWith("/") && !r.startsWith("//") ? { redirect: r } : {};
+  },
   head: () => ({
     meta: [
       { title: "Connexion — Cortège & Cérémonie" },
@@ -43,7 +44,7 @@ function AuthPage() {
     const f = new FormData(e.currentTarget);
     const email = String(f.get("email") ?? "").trim();
     const password = String(f.get("password") ?? "");
-    if (!/^\S+@\S+\.\S+$/.test(email)) return toast.error("E-mail invalide");
+    if (!/^\S+@\S+\.\S+$/.test(email)) { toast.error("E-mail invalide"); return; }
     setBusy(true);
     try {
       if (mode === "forgot") {
