@@ -137,7 +137,7 @@ function PartnerVehicle({ uid }: { uid: string }) {
     queryFn: async () => (await supabase.from("vehicle_change_requests").select("*").order("created_at", { ascending: false })).data ?? [],
   });
   if (!cars.length) return <p className="admin-empty">Votre véhicule est en cours de création par l’équipe.</p>;
-  const car = cars[0];
+  const car = cars[0]!;
   const { data: raw } = { data: car as any };
 
   async function upload(files: FileList | null) {
@@ -154,15 +154,15 @@ function PartnerVehicle({ uid }: { uid: string }) {
 
   async function submitChange(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const f = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
+    const f = Object.fromEntries(new FormData(e.currentTarget)) as any;
     const changes: Record<string, unknown> = {};
     if (f.color && f.color !== car.color) changes.color = f.color.slice(0, 40);
     if (f.seats && Number(f.seats) !== car.seats) changes.seats = Math.max(1, Math.min(60, Number(f.seats)));
     if (f.price_from && Number(f.price_from) !== car.price_from) changes.price_from = Number(f.price_from);
     if (f.description && f.description !== car.description) changes.description = f.description.slice(0, 2000);
-    if (!Object.keys(changes).length) return toast.info("Aucune modification");
+    if (!Object.keys(changes).length) { toast.info("Aucune modification"); return; }
     const { error } = await supabase.from("vehicle_change_requests").insert({ car_id: car.id, partner_id: uid, changes: changes as any });
-    if (error) return toast.error("Envoi impossible");
+    if (error) { toast.error("Envoi impossible"); return; }
     toast.success("Modification envoyée pour validation");
     qc.invalidateQueries({ queryKey: ["my-changes"] });
   }
@@ -175,7 +175,7 @@ function PartnerVehicle({ uid }: { uid: string }) {
       <label className="ref-btn inline-flex cursor-pointer items-center border border-border px-4">
         Ajouter des photos<input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => upload(e.target.files)} />
       </label>
-      <form className="ref-form mt-6" onSubmit={async (e) => {
+      <form className="ref-form mt-6" onSubmit={async (e): Promise<void> => {
         e.preventDefault();
         const v = String(new FormData(e.currentTarget).get("availability") ?? "");
         try { await saveAvail({ data: { carId: car.id, availability: v } }); toast.success("Disponibilités mises à jour"); qc.invalidateQueries({ queryKey: ["my-cars"] }); } catch (err) { toast.error((err as Error).message); }
@@ -200,9 +200,9 @@ function PartnerProfile({ uid }: { uid: string }) {
   const { data: p } = useQuery({ queryKey: ["profile", uid], queryFn: async () => (await supabase.from("profiles").select("*").eq("id", uid).maybeSingle()).data });
   return (
     <div className="admin-edit-grid">
-      <form key={p?.id ?? "x"} className="dossier ref-form" onSubmit={async (e) => {
+      <form key={p?.id ?? "x"} className="dossier ref-form" onSubmit={async (e): Promise<void> => {
         e.preventDefault();
-        const f = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
+        const f = Object.fromEntries(new FormData(e.currentTarget)) as any;
         const { error } = await supabase.from("profiles").upsert({ id: uid, first_name: f.first_name.slice(0, 80), last_name: f.last_name.slice(0, 80), phone: f.phone.slice(0, 20) });
         error ? toast.error("Enregistrement impossible") : toast.success("Profil enregistré");
       }}>
@@ -212,10 +212,10 @@ function PartnerProfile({ uid }: { uid: string }) {
         <label className="form-field form-wide"><span>Téléphone</span><input name="phone" defaultValue={p?.phone ?? ""} /></label>
         <Button className="ref-btn">Enregistrer</Button>
       </form>
-      <form className="dossier ref-form" onSubmit={async (e) => {
+      <form className="dossier ref-form" onSubmit={async (e): Promise<void> => {
         e.preventDefault();
         const pw = String(new FormData(e.currentTarget).get("password"));
-        if (pw.length < 8) return toast.error("8 caractères minimum");
+        if (pw.length < 8) { toast.error("8 caractères minimum"); return; }
         const { error } = await supabase.auth.updateUser({ password: pw });
         error ? toast.error(error.message) : toast.success("Mot de passe modifié");
         e.currentTarget.reset();
