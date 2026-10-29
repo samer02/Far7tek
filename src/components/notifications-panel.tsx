@@ -1,8 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
 
 export function NotificationsPanel({ admin = false }: { admin?: boolean }) {
+  const { t, dateTime } = useI18n();
   const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["notifications", admin],
@@ -21,17 +24,21 @@ export function NotificationsPanel({ admin = false }: { admin?: boolean }) {
   return (
     <div className="registry">
       <div className="registry-toolbar">
-        <h3>Notifications</h3>
-        <Button variant="outline" className="ref-btn" onClick={markAll}>Tout marquer comme lu</Button>
+        <h3 className="flex items-center gap-2"><Bell className="h-5 w-5 text-primary" />{t("Notifications", "Notifications", "الإشعارات")}</h3>
+        <Button variant="outline" className="ref-btn" onClick={markAll}>{t("Tout marquer comme lu", "Mark all as read", "تعليم الكل كمقروء")}</Button>
       </div>
-      {!data?.length ? <p className="admin-empty">Aucune notification.</p> : data.map((n) => (
+      {!data?.length ? <p className="admin-empty">{t("Aucune notification.", "No notifications.", "لا توجد إشعارات.")}</p> : data.map((n) => (
         <div key={n.id} className="note-row" style={{ opacity: n.read ? 0.6 : 1 }}>
           <strong className="text-primary">{n.title}</strong>
           <p>{n.body}</p>
-          <small>{new Date(n.created_at).toLocaleString("fr-FR")}</small>
+          <small>{dateTime(n.created_at)}</small>
         </div>
       ))}
-      <p className="mt-4 text-[10px]">Notifications internes. L’envoi par e-mail ou SMS pourra être ajouté plus tard.</p>
+      <p className="mt-4 text-xs">{t(
+        "Notifications internes. L’envoi par e-mail ou SMS pourra être ajouté plus tard.",
+        "In-app notifications. Email or SMS delivery can be added later.",
+        "إشعارات داخلية. يمكن إضافة الإرسال عبر البريد أو الرسائل القصيرة لاحقاً.",
+      )}</p>
     </div>
   );
 }
