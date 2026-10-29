@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import { toast } from "sonner";
 import { KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/reinitialiser")({
 function ResetPage() {
   const { t } = useI18n();
   const [busy, setBusy] = useState(false);
+  const hydrated = useHydrated();
   const navigate = useNavigate();
   const qc = useQueryClient();
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -54,7 +56,7 @@ function ResetPage() {
       <form className="ref-form" onSubmit={submit}>
         <label className="form-field"><span>{t("Nouveau mot de passe", "New password", "كلمة المرور الجديدة")}</span><input name="password" type="password" autoComplete="new-password" required dir="ltr" /></label>
         <label className="form-field"><span>{t("Confirmation", "Confirm", "تأكيد")}</span><input name="confirm" type="password" autoComplete="new-password" required dir="ltr" /></label>
-        <Button type="submit" className="ref-btn" disabled={busy}>{busy ? t("Enregistrement…", "Saving…", "جارٍ الحفظ…") : t("Enregistrer", "Save", "حفظ")}</Button>
+        <Button type="submit" className="ref-btn" disabled={busy || !hydrated}>{busy ? t("Enregistrement…", "Saving…", "جارٍ الحفظ…") : t("Enregistrer", "Save", "حفظ")}</Button>
       </form>
     </div>
   );

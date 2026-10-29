@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import { z } from "zod";
 import { CheckCircle2, ImagePlus, User, Car, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ function PartnerApply() {
   const [services, setServices] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const hydrated = useHydrated();
   const [done, setDone] = useState(false);
 
   const conditions = [
@@ -210,7 +212,7 @@ function PartnerApply() {
             )}
           </div>
           {err("form")}
-          <Button type="submit" className="ref-btn mt-8 w-full" disabled={busy}>{busy ? t("Envoi du dossier…", "Sending…", "جارٍ الإرسال…") : t("Envoyer mon dossier", "Send my application", "أرسل ملفي")}</Button>
+          <Button type="submit" className="ref-btn mt-8 w-full" disabled={busy || !hydrated}>{busy ? t("Envoi du dossier…", "Sending…", "جارٍ الإرسال…") : t("Envoyer mon dossier", "Send my application", "أرسل ملفي")}</Button>
         </form>
       </div>
     </section>

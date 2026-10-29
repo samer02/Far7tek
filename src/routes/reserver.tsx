@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import { z } from "zod";
 import { CheckCircle2, Car, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ function Booking() {
   const [trip, setTrip] = useState("one_way");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const hydrated = useHydrated();
   const [done, setDone] = useState<string | null>(null);
   const schema = useMemo(() => makeSchema(t), [t]);
 
@@ -204,7 +206,7 @@ function Booking() {
                 </div>
               </div>
               {err("form")}
-              <Button type="submit" className="ref-btn mt-8 w-full" disabled={busy}>{busy ? t("Envoi en cours…", "Sending…", "جارٍ الإرسال…") : t("Envoyer ma demande", "Send my request", "أرسل طلبي")}</Button>
+              <Button type="submit" className="ref-btn mt-8 w-full" disabled={busy || !hydrated}>{busy ? t("Envoi en cours…", "Sending…", "جارٍ الإرسال…") : t("Envoyer ma demande", "Send my request", "أرسل طلبي")}</Button>
             </form>
           )}
         </div>
