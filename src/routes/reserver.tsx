@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { fetchCars } from "@/lib/cars";
-import { SERVICE_TYPES, VEHICLE_TYPES } from "@/lib/platform";
+import { SERVICE_TYPES } from "@/lib/platform";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/reserver")({
@@ -42,7 +42,7 @@ function makeSchema(t: T) {
       wedding_time: z.string().min(1, t("Heure de départ requise", "Departure time required", "ساعة الانطلاق مطلوبة")),
       return_time: z.string().optional(),
       passengers: z.coerce.number().int().min(1, t("Au moins 1 passager", "At least 1 passenger", "راكب واحد على الأقل")).max(60),
-      vehicle_type: z.string().max(80),
+      vehicle_type: z.string().max(80).default(""),
       trip_type: z.enum(["one_way", "round_trip"]),
       car_name: z.string().max(120),
       message: z.string().trim().max(1500),
@@ -158,12 +158,6 @@ function Booking() {
                     </label>
                   )}
                   <label className="form-field"><span>{t("Nombre de passagers", "Passengers", "عدد الركاب")}</span><input name="passengers" type="number" min={1} defaultValue={service === "wedding" ? 2 : 4} />{err("passengers")}</label>
-                  <label className="form-field"><span>{t("Type de voiture souhaité", "Preferred car type", "نوع السيارة المفضل")}</span>
-                    <select name="vehicle_type" defaultValue={selected?.category ?? ""}>
-                      <option value="">{none}</option>
-                      {VEHICLE_TYPES.map((v) => <option key={v.value} value={v.value}>{p(v.label)}</option>)}
-                    </select>
-                  </label>
                   <label className="form-field"><span>{t("Véhicule précis (facultatif)", "Specific vehicle (optional)", "سيارة محددة (اختياري)")}</span>
                     <select name="car_name" defaultValue={selected?.name ?? ""}>
                       <option value="">{none}</option>

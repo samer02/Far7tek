@@ -12,7 +12,7 @@ export const LANGS: { code: Lang; short: string; name: string }[] = [
 
 export const LANG_STORAGE_KEY = "far7tek-lang";
 const INDEX: Record<Lang, 0 | 1 | 2> = { fr: 0, en: 1, ar: 2 };
-const LOCALES: Record<Lang, string> = { fr: "fr-FR", en: "en-GB", ar: "ar-MA-u-nu-latn" };
+const LOCALES: Record<Lang, string> = { fr: "fr-TN", en: "en-GB", ar: "ar-TN-u-nu-latn" };
 
 export const pick = (t: Tri, lang: Lang) => t[INDEX[lang]];
 export const labelOf = (map: Record<string, Tri>, key: string, lang: Lang) => (map[key] ? pick(map[key], lang) : key);

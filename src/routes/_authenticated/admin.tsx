@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { signedUrls } from "@/lib/cars";
-import { BOOKING_STATUS, PROPOSAL_STATUS, ASSIGNMENT_STATUS, CAR_VALIDATION, SERVICE_TYPES, matchScore, partnerServiceLabel, serviceLabel, vehicleTypeLabel } from "@/lib/platform";
+import { fmtPrice, BOOKING_STATUS, PROPOSAL_STATUS, ASSIGNMENT_STATUS, CAR_VALIDATION, SERVICE_TYPES, matchScore, partnerServiceLabel, serviceLabel, vehicleTypeLabel } from "@/lib/platform";
 import { approvePartner, assignTrip, listClients, reviewChangeRequest, reviewPartner, setBookingStatus, setCarValidation } from "@/lib/admin.functions";
 import { StatusPill } from "@/components/site-chrome";
 import { NotificationsPanel } from "@/components/notifications-panel";
@@ -193,7 +193,7 @@ function Partners({ proposals, refresh }: Ctx) {
             <div><small>{t("Ville / adresse", "City / address", "المدينة / العنوان")}</small>{cur.city} · {cur.address}</div>
             <div><small>{t("Véhicule", "Vehicle", "السيارة")}</small>{cur.year} · {cur.color} · {vehicleTypeLabel(cur.vehicle_type, lang)} · {cur.seats} {t("places", "seats", "مقاعد")} · {cur.vehicle_condition}</div>
             <div><small>{t("Services", "Services", "الخدمات")}</small>{svc(cur.services)}</div>
-            <div><small>{t("Disponibilités / tarif", "Availability / price", "التوفر / السعر")}</small>{cur.availability} · {cur.desired_rate ? `${cur.desired_rate} €` : t("non communiqué", "not given", "غير محدد")}</div>
+            <div><small>{t("Disponibilités / tarif", "Availability / price", "التوفر / السعر")}</small>{cur.availability} · {cur.desired_rate ? fmtPrice(cur.desired_rate, lang) : t("non communiqué", "not given", "غير محدد")}</div>
             <div className="form-wide"><small>{t("Description", "Description", "الوصف")}</small>{cur.description}</div>
             {cur.extra_info && <div className="form-wide"><small>{t("Infos complémentaires", "Additional info", "معلومات إضافية")}</small>{cur.extra_info}</div>}
             {cur.rejection_reason && <div className="form-wide"><small>{t("Motif de refus", "Reason for declining", "سبب الرفض")}</small>{cur.rejection_reason}</div>}
