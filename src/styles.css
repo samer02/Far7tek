@@ -420,6 +420,8 @@ html[dir="rtl"] .car-meta { letter-spacing: 0; }
 /* ---------- Responsive ---------- */
 @media (max-width: 1180px) {
   .desktop-nav a { padding-inline: 9px; font-size: 13px; }
+}
+@media (max-width: 1060px) {
   .header-cta .login-btn { padding-inline: 12px; }
   .header-cta .login-btn .btn-label { display: none; }
 }
