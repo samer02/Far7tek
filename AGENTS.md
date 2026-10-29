@@ -14,3 +14,4 @@
 - Stored database values (statuses, vehicle types, services) stay as fixed keys/French values; only their displayed labels are translated — avoids data migrations when wording changes.
 - Theme is the `.dark` class on `<html>`, set before paint by `themeInitScript` and toggled by `ThemeToggle`; light is the default — prevents a flash of the wrong theme.
 - Styling uses semantic tokens and shared classes in `src/styles.css` with logical (inline-start/end) properties — required for correct Arabic RTL layout.
+- App images must be bundled files imported from `src/assets` (no Lovable CDN asset pointers) — the site is also deployed on Vercel, where `/__l5e/assets-v1/` URLs do not exist.
