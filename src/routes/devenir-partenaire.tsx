@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import { z } from "zod";
 import { CheckCircle2, ImagePlus, User, Car, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ function PartnerApply() {
   const [services, setServices] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const hydrated = useHydrated();
   const [done, setDone] = useState(false);
 
   const conditions = [
@@ -77,12 +79,30 @@ function PartnerApply() {
     if (!parsed.success) parsed.error.issues.forEach((i) => (errs[i.path[0] as string] = i.message));
     if (!services.length) errs["services"] = t("Choisissez au moins un service", "Choose at least one service", "اختر خدمة واحدة على الأقل");
     if (!files.some((f) => f.kind === "main")) errs["files"] = t("La photo principale est requise", "The main photo is required", "الصورة الرئيسية مطلوبة");
-    setErrors(errs);
-    if (Object.keys(errs).length || !parsed.success) return;
+    if (Object.keys(errs).length || !parsed.success) {
+      const count = Object.keys(errs).length;
+      setErrors({ ...errs, form: t(
+        `Dossier non envoyé : ${count} champ(s) à corriger (en rouge ci-dessus).`,
+        `Application not sent: ${count} field(s) to fix (in red above).`,
+        `لم يُرسل الملف: ${count} حقل(حقول) يجب تصحيحها (باللون الأحمر أعلاه).`,
+      ) });
+      const form = e.currentTarget;
+      requestAnimationFrame(() => {
+        const first = form.querySelector(".form-error");
+        first?.closest(".form-field, .form-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      return;
+    }
+    setErrors({});
     setBusy(true);
     const id = crypto.randomUUID();
     const { error } = await supabase.from("car_proposals").insert({ id, ...parsed.data, vehicle_type: "", services, travel_zone: parsed.data.city, schedules: parsed.data.availability, status: "pending" });
-    if (error) { setBusy(false); setErrors({ form: t("L’envoi a échoué, merci de réessayer.", "Sending failed, please try again.", "فشل الإرسال، يرجى المحاولة مجدداً.") }); return; }
+    if (error) {
+      console.error("Partner application failed", error);
+      setBusy(false);
+      setErrors({ form: t("L’envoi a échoué, merci de réessayer.", "Sending failed, please try again.", "فشل الإرسال، يرجى المحاولة مجدداً.") + ` (${error.message})` });
+      return;
+    }
     for (const f of files) {
       const ext = f.file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
       const path = `${id}/${f.kind}-${crypto.randomUUID()}.${ext}`;
@@ -192,7 +212,7 @@ function PartnerApply() {
             )}
           </div>
           {err("form")}
-          <Button type="submit" className="ref-btn mt-8 w-full" disabled={busy}>{busy ? t("Envoi du dossier…", "Sending…", "جارٍ الإرسال…") : t("Envoyer mon dossier", "Send my application", "أرسل ملفي")}</Button>
+          <Button type="submit" className="ref-btn mt-8 w-full" disabled={busy || !hydrated}>{busy ? t("Envoi du dossier…", "Sending…", "جارٍ الإرسال…") : t("Envoyer mon dossier", "Send my application", "أرسل ملفي")}</Button>
         </form>
       </div>
     </section>

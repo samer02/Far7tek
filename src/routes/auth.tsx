@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +34,7 @@ function AuthPage() {
   const qc = useQueryClient();
   const [mode, setMode] = useState<"in" | "up" | "forgot">("in");
   const [busy, setBusy] = useState(false);
+  const hydrated = useHydrated();
 
   async function afterLogin() {
     await qc.invalidateQueries({ queryKey: ["auth"] });
@@ -91,7 +93,7 @@ function AuthPage() {
         {mode !== "forgot" && (
           <label className="form-field"><span>{t("Mot de passe", "Password", "كلمة المرور")}</span><input name="password" type="password" autoComplete={mode === "up" ? "new-password" : "current-password"} required dir="ltr" /></label>
         )}
-        <Button type="submit" className="ref-btn" disabled={busy}>
+        <Button type="submit" className="ref-btn" disabled={busy || !hydrated}>
           {busy ? t("Patientez…", "Please wait…", "يرجى الانتظار…") : mode === "up" ? t("Créer mon compte", "Create my account", "إنشاء حسابي") : mode === "forgot" ? t("Envoyer le lien", "Send the link", "إرسال الرابط") : t("Se connecter", "Sign in", "دخول")}
         </Button>
       </form>
