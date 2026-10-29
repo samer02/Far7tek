@@ -462,14 +462,25 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "editor"
+      app_role: "admin" | "editor" | "partner"
       booking_status:
         | "new"
         | "contacted"
         | "pending"
         | "confirmed"
         | "cancelled"
-      proposal_status: "new" | "reviewing" | "accepted" | "rejected"
+        | "accepted"
+        | "rejected"
+        | "in_progress"
+        | "completed"
+      proposal_status:
+        | "new"
+        | "reviewing"
+        | "accepted"
+        | "rejected"
+        | "pending"
+        | "info_requested"
+        | "approved"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -597,9 +608,27 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "editor"],
-      booking_status: ["new", "contacted", "pending", "confirmed", "cancelled"],
-      proposal_status: ["new", "reviewing", "accepted", "rejected"],
+      app_role: ["admin", "editor", "partner"],
+      booking_status: [
+        "new",
+        "contacted",
+        "pending",
+        "confirmed",
+        "cancelled",
+        "accepted",
+        "rejected",
+        "in_progress",
+        "completed",
+      ],
+      proposal_status: [
+        "new",
+        "reviewing",
+        "accepted",
+        "rejected",
+        "pending",
+        "info_requested",
+        "approved",
+      ],
     },
   },
 } as const
