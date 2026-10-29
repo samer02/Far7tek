@@ -10,7 +10,7 @@ import { fetchCars } from "@/lib/cars";
 import { SERVICE_TYPES, VEHICLE_TYPES } from "@/lib/platform";
 
 export const Route = createFileRoute("/reserver")({
-  validateSearch: (s: Record<string, unknown>) => ({ car: typeof s.car === "string" ? s.car : undefined }),
+  validateSearch: (s: Record<string, unknown>): { car?: string } => ({ car: typeof s.car === "string" ? s.car : undefined }),
   head: () => ({
     meta: [
       { title: "Réserver une voiture avec chauffeur — Cortège & Cérémonie" },

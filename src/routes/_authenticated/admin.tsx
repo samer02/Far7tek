@@ -188,13 +188,13 @@ function Partners({ proposals, refresh }: Ctx) {
           )}
           <h3 className="mt-6">Notes internes</h3>
           {notes.map((n) => <div key={n.id} className="note-row"><small>{new Date(n.created_at).toLocaleString("fr-FR")}</small><p>{n.note}</p></div>)}
-          <form className="ref-form mt-3" onSubmit={async (e) => {
+          <form className="ref-form mt-3" onSubmit={async (e): Promise<void> => {
             e.preventDefault();
             const form = e.currentTarget;
             const note = String(new FormData(form).get("note") ?? "").trim().slice(0, 2000);
             if (!note) return;
             const { error } = await supabase.from("admin_notes").insert({ car_proposal_id: cur.id, note, author_id: (await supabase.auth.getUser()).data.user!.id });
-            if (error) return toast.error("Note non enregistrée");
+            if (error) { toast.error("Note non enregistrée"); return; }
             form.reset(); openDossier(cur.id);
           }}>
             <label className="form-field form-wide"><span>Ajouter une note</span><textarea name="note" /></label>

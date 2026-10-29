@@ -155,8 +155,8 @@ export const reviewChangeRequest = createServerFn({ method: "POST" })
     if (data.approve) {
       const allowed = ["name", "color", "year", "seats", "description", "short_description", "price_from", "city", "category"];
       const patch: Record<string, unknown> = {};
-      for (const k of allowed) if (k in (cr.changes as any)) patch[k] = (cr.changes as any)[k];
-      await admin.from("cars").update(patch).eq("id", cr.car_id);
+      for (const k of allowed) if (k in (cr.changes as any)) (patch as any)[k] = (cr.changes as any)[k];
+      await admin.from("cars").update(patch as any).eq("id", cr.car_id);
     }
     await admin.from("vehicle_change_requests").update({ status: data.approve ? "approved" : "rejected" }).eq("id", cr.id);
     await admin.from("notifications").insert({ user_id: cr.partner_id, title: data.approve ? "Modification validée" : "Modification refusée", body: "Votre demande de modification du véhicule a été traitée.", link: "/partenaire" });
