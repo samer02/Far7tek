@@ -37,7 +37,7 @@ function CarDetail() {
       <div className="breadcrumb-ref"><Link to="/vehicules">{t("Véhicules", "Vehicles", "السيارات")}</Link> / {car.name}</div>
       <div className="detail-title">
         <div>
-          <span className="eyebrow">{vehicleTypeLabel(car.category, lang)}</span>
+          {car.category && <span className="eyebrow">{vehicleTypeLabel(car.category, lang)}</span>}
           <h1>{car.name}</h1>
           <p>{car.short_description}</p>
         </div>
