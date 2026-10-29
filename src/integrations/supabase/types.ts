@@ -61,16 +61,24 @@ export type Database = {
           car_id: string | null
           car_name: string
           city: string
+          client_id: string | null
           created_at: string
+          destination_type: string
           email: string
           first_name: string
           id: string
           last_name: string
           message: string
+          passengers: number
           phone: string
+          pickup_address: string
+          reference: string
+          return_time: string | null
           service_type: string
           status: Database["public"]["Enums"]["booking_status"]
+          trip_type: string
           updated_at: string
+          vehicle_type: string
           venue: string
           wedding_date: string
           wedding_time: string
@@ -79,16 +87,24 @@ export type Database = {
           car_id?: string | null
           car_name: string
           city: string
+          client_id?: string | null
           created_at?: string
+          destination_type?: string
           email: string
           first_name: string
           id?: string
           last_name: string
           message?: string
+          passengers?: number
           phone: string
+          pickup_address?: string
+          reference?: string
+          return_time?: string | null
           service_type: string
           status?: Database["public"]["Enums"]["booking_status"]
+          trip_type?: string
           updated_at?: string
+          vehicle_type?: string
           venue: string
           wedding_date: string
           wedding_time: string
@@ -97,16 +113,24 @@ export type Database = {
           car_id?: string | null
           car_name?: string
           city?: string
+          client_id?: string | null
           created_at?: string
+          destination_type?: string
           email?: string
           first_name?: string
           id?: string
           last_name?: string
           message?: string
+          passengers?: number
           phone?: string
+          pickup_address?: string
+          reference?: string
+          return_time?: string | null
           service_type?: string
           status?: Database["public"]["Enums"]["booking_status"]
+          trip_type?: string
           updated_at?: string
+          vehicle_type?: string
           venue?: string
           wedding_date?: string
           wedding_time?: string
@@ -161,72 +185,110 @@ export type Database = {
       }
       car_proposals: {
         Row: {
+          address: string
           availability: string
           brand: string
+          car_id: string | null
           city: string
           color: string
           created_at: string
           description: string
           desired_rate: number
           email: string
+          extra_info: string
           first_name: string
           id: string
+          info_request: string | null
           last_name: string
           message: string
           model: string
+          partner_user_id: string | null
           phone: string
+          rejection_reason: string | null
           schedules: string
+          seats: number
+          services: string[]
           status: Database["public"]["Enums"]["proposal_status"]
           travel_zone: string
           updated_at: string
+          user_id: string | null
+          vehicle_condition: string
           vehicle_type: string
           year: number
         }
         Insert: {
+          address?: string
           availability: string
           brand: string
+          car_id?: string | null
           city: string
           color: string
           created_at?: string
           description: string
-          desired_rate: number
+          desired_rate?: number
           email: string
+          extra_info?: string
           first_name: string
           id?: string
+          info_request?: string | null
           last_name: string
           message?: string
           model: string
+          partner_user_id?: string | null
           phone: string
+          rejection_reason?: string | null
           schedules: string
+          seats?: number
+          services?: string[]
           status?: Database["public"]["Enums"]["proposal_status"]
           travel_zone: string
           updated_at?: string
+          user_id?: string | null
+          vehicle_condition?: string
           vehicle_type: string
           year: number
         }
         Update: {
+          address?: string
           availability?: string
           brand?: string
+          car_id?: string | null
           city?: string
           color?: string
           created_at?: string
           description?: string
           desired_rate?: number
           email?: string
+          extra_info?: string
           first_name?: string
           id?: string
+          info_request?: string | null
           last_name?: string
           message?: string
           model?: string
+          partner_user_id?: string | null
           phone?: string
+          rejection_reason?: string | null
           schedules?: string
+          seats?: number
+          services?: string[]
           status?: Database["public"]["Enums"]["proposal_status"]
           travel_zone?: string
           updated_at?: string
+          user_id?: string | null
+          vehicle_condition?: string
           vehicle_type?: string
           year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "car_proposals_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       car_videos: {
         Row: {
@@ -269,6 +331,7 @@ export type Database = {
           availability: string
           brand: string
           category: string
+          city: string | null
           color: string | null
           created_at: string
           description: string
@@ -277,12 +340,16 @@ export type Database = {
           id: string
           model: string
           name: string
+          owner_id: string | null
           price_from: number | null
+          seats: number | null
           service_information: Json
+          services: string[]
           short_description: string
           slug: string
           sort_order: number
           updated_at: string
+          validation_status: string
           year: number | null
         }
         Insert: {
@@ -290,6 +357,7 @@ export type Database = {
           availability?: string
           brand: string
           category: string
+          city?: string | null
           color?: string | null
           created_at?: string
           description?: string
@@ -298,12 +366,16 @@ export type Database = {
           id?: string
           model: string
           name: string
+          owner_id?: string | null
           price_from?: number | null
+          seats?: number | null
           service_information?: Json
+          services?: string[]
           short_description?: string
           slug: string
           sort_order?: number
           updated_at?: string
+          validation_status?: string
           year?: number | null
         }
         Update: {
@@ -311,6 +383,7 @@ export type Database = {
           availability?: string
           brand?: string
           category?: string
+          city?: string | null
           color?: string | null
           created_at?: string
           description?: string
@@ -319,12 +392,16 @@ export type Database = {
           id?: string
           model?: string
           name?: string
+          owner_id?: string | null
           price_from?: number | null
+          seats?: number | null
           service_information?: Json
+          services?: string[]
           short_description?: string
           slug?: string
           sort_order?: number
           updated_at?: string
+          validation_status?: string
           year?: number | null
         }
         Relationships: []
@@ -371,6 +448,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          audience: string
+          body: string
+          created_at: string
+          id: string
+          link: string | null
+          read: boolean
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          audience?: string
+          body?: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          audience?: string
+          body?: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -405,18 +515,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          kind: string
           proposal_id: string
           storage_path: string
         }
         Insert: {
           created_at?: string
           id?: string
+          kind?: string
           proposal_id: string
           storage_path: string
         }
         Update: {
           created_at?: string
           id?: string
+          kind?: string
           proposal_id?: string
           storage_path?: string
         }
@@ -426,6 +539,89 @@ export type Database = {
             columns: ["proposal_id"]
             isOneToOne: false
             referencedRelation: "car_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_assignments: {
+        Row: {
+          booking_request_id: string
+          car_id: string | null
+          created_at: string
+          id: string
+          partner_id: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_request_id: string
+          car_id?: string | null
+          created_at?: string
+          id?: string
+          partner_id: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_request_id?: string
+          car_id?: string | null
+          created_at?: string
+          id?: string
+          partner_id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_assignments_booking_request_id_fkey"
+            columns: ["booking_request_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_assignments_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_status_history: {
+        Row: {
+          booking_request_id: string
+          changed_by: string | null
+          created_at: string
+          id: string
+          note: string
+          status: string
+        }
+        Insert: {
+          booking_request_id: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          note?: string
+          status: string
+        }
+        Update: {
+          booking_request_id?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          note?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_status_history_booking_request_id_fkey"
+            columns: ["booking_request_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -448,6 +644,41 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_change_requests: {
+        Row: {
+          car_id: string
+          changes: Json
+          created_at: string
+          id: string
+          partner_id: string
+          status: string
+        }
+        Insert: {
+          car_id: string
+          changes?: Json
+          created_at?: string
+          id?: string
+          partner_id: string
+          status?: string
+        }
+        Update: {
+          car_id?: string
+          changes?: Json
+          created_at?: string
+          id?: string
+          partner_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_change_requests_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -458,6 +689,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_assigned_partner: {
+        Args: { _booking: string; _user: string }
         Returns: boolean
       }
     }

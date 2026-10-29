@@ -8,6 +8,13 @@
       "when": 1793306011441,
       "tag": "0000_extend_enums",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793306046688,
+      "tag": "0001_transport_partner_platform",
+      "breakpoints": true
     }
   ]
 }
