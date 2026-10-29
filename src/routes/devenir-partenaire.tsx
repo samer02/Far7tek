@@ -162,7 +162,7 @@ function PartnerApply() {
                   {conditions.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>{err("vehicle_condition")}
               </label>
-              <label className="form-field"><span>{t("Tarif indicatif (€, facultatif)", "Indicative price (€, optional)", "السعر التقريبي (€، اختياري)")}</span><input name="desired_rate" type="number" min={0} defaultValue={0} /></label>
+              <label className="form-field"><span>{t("Tarif indicatif (DT, facultatif)", "Indicative price (DT, optional)", "السعر التقريبي (د.ت، اختياري)")}</span><input name="desired_rate" type="number" min={0} defaultValue={0} /></label>
               <div className="form-field form-wide"><span>{t("Services proposés", "Services offered", "الخدمات المقترحة")}</span>
                 <div className="flex flex-wrap gap-3">
                   {PARTNER_SERVICES.map((s) => (

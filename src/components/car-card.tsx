@@ -3,7 +3,7 @@ import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CarView } from "@/lib/cars";
 import { useI18n } from "@/lib/i18n";
-import { vehicleTypeLabel } from "@/lib/platform";
+import { fmtPrice, vehicleTypeLabel } from "@/lib/platform";
 
 export function CarCard({ car }: { car: CarView }) {
   const { t, lang, dir } = useI18n();
@@ -26,7 +26,7 @@ export function CarCard({ car }: { car: CarView }) {
         <div className="car-bottom">
           <span className="car-price">
             <small>{t("À partir de", "From", "ابتداءً من")}</small>
-            {car.price_from ? `${car.price_from} €` : t("Sur devis", "On quote", "حسب الطلب")}
+            {car.price_from ? fmtPrice(car.price_from, lang) : t("Sur devis", "On quote", "حسب الطلب")}
           </span>
           <Button asChild className="ref-btn">
             <Link to="/vehicules/$slug" params={{ slug: car.slug }}>{t("Voir", "View", "عرض")} <Arrow /></Link>

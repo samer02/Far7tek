@@ -101,4 +101,7 @@ export function matchScore(
   return s;
 }
 
+/** Prices are in Tunisian dinars. */
+export const fmtPrice = (n: number, lang: Lang = "fr") => (lang === "ar" ? `${n} د.ت` : `${n} DT`);
+
 export const fmtDate = (d: string) => new Date(d).toLocaleDateString("fr-FR");

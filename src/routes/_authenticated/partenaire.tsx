@@ -207,7 +207,7 @@ function PartnerVehicle({ uid }: { uid: string }) {
         <h3 className="form-wide">{t("Modifications soumises à validation", "Changes subject to approval", "تعديلات تخضع للموافقة")}</h3>
         <label className="form-field"><span>{t("Couleur", "Colour", "اللون")}</span><input name="color" defaultValue={car.color ?? ""} /></label>
         <label className="form-field"><span>{t("Places", "Seats", "المقاعد")}</span><input name="seats" type="number" defaultValue={car.seats ?? 4} /></label>
-        <label className="form-field"><span>{t("Tarif indicatif (€)", "Indicative price (€)", "السعر التقريبي (€)")}</span><input name="price_from" type="number" defaultValue={car.price_from ?? 0} /></label>
+        <label className="form-field"><span>{t("Tarif indicatif (DT)", "Indicative price (DT)", "السعر التقريبي (د.ت)")}</span><input name="price_from" type="number" defaultValue={car.price_from ?? 0} /></label>
         <label className="form-field form-wide"><span>{t("Description", "Description", "الوصف")}</span><textarea name="description" defaultValue={car.description} /></label>
         <Button className="ref-btn">{t("Soumettre à l’administration", "Submit to the admin team", "إرسال إلى الإدارة")}</Button>
       </form>

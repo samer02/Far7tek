@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { fetchCars } from "@/lib/cars";
-import { partnerServiceLabel, vehicleTypeLabel } from "@/lib/platform";
+import { fmtPrice, partnerServiceLabel, vehicleTypeLabel } from "@/lib/platform";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/vehicules/$slug")({
@@ -57,7 +57,7 @@ function CarDetail() {
         <div><small>{t("Places", "Seats", "المقاعد")}</small>{car.seats ?? "—"}</div>
         <div><small>{t("Ville", "City", "المدينة")}</small>{car.city ?? "—"}</div>
         <div><small>{t("Disponibilité", "Availability", "التوفر")}</small>{car.availability}</div>
-        <div><small>{t("Tarif indicatif", "Indicative price", "السعر التقريبي")}</small>{car.price_from ? `${t("dès", "from", "ابتداءً من")} ${car.price_from} €` : t("Sur devis", "On quote", "حسب الطلب")}</div>
+        <div><small>{t("Tarif indicatif", "Indicative price", "السعر التقريبي")}</small>{car.price_from ? `${t("dès", "from", "ابتداءً من")} ${fmtPrice(car.price_from, lang)}` : t("Sur devis", "On quote", "حسب الطلب")}</div>
         <div className="form-wide"><small>{t("Services", "Services", "الخدمات")}</small>{car.services.map((s) => partnerServiceLabel(s, lang)).join(" · ") || "—"}</div>
       </div>
       <p className="mt-8 max-w-3xl">{car.description}</p>
