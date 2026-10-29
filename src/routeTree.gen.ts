@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DevenirPartenaireRouteImport } from './routes/devenir-partenaire'
 import { Route as ReinitialiserRouteImport } from './routes/reinitialiser'
 import { Route as ReserverRouteImport } from './routes/reserver'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
 import { Route as AuthenticatedPartenaireRouteImport } from './routes/_authenticated/partenaire'
 import { Route as VehiculesIndexRouteImport } from './routes/vehicules.index'
@@ -49,6 +50,11 @@ const ReserverRoute = ReserverRouteImport.update({
   path: '/reserver',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCompteRoute = AuthenticatedCompteRouteImport.update({
   id: '/compte',
   path: '/compte',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/devenir-partenaire': typeof DevenirPartenaireRoute
   '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/compte': typeof AuthenticatedCompteRoute
   '/partenaire': typeof AuthenticatedPartenaireRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/devenir-partenaire': typeof DevenirPartenaireRoute
   '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/compte': typeof AuthenticatedCompteRoute
   '/partenaire': typeof AuthenticatedPartenaireRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/devenir-partenaire': typeof DevenirPartenaireRoute
   '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/compte': typeof AuthenticatedCompteRoute
   '/_authenticated/partenaire': typeof AuthenticatedPartenaireRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/devenir-partenaire'
     | '/reinitialiser'
     | '/reserver'
+    | '/admin'
     | '/compte'
     | '/partenaire'
     | '/vehicules/$slug'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/devenir-partenaire'
     | '/reinitialiser'
     | '/reserver'
+    | '/admin'
     | '/compte'
     | '/partenaire'
     | '/vehicules/$slug'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/devenir-partenaire'
     | '/reinitialiser'
     | '/reserver'
+    | '/_authenticated/admin'
     | '/_authenticated/compte'
     | '/_authenticated/partenaire'
     | '/vehicules/$slug'
@@ -197,6 +209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReserverRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/compte': {
       id: '/_authenticated/compte'
       path: '/compte'
@@ -229,11 +248,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCompteRoute: typeof AuthenticatedCompteRoute
   AuthenticatedPartenaireRoute: typeof AuthenticatedPartenaireRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCompteRoute: AuthenticatedCompteRoute,
   AuthenticatedPartenaireRoute: AuthenticatedPartenaireRoute,
 }
