@@ -12,7 +12,7 @@ export function CarCard({ car }: { car: CarView }) {
     <article className="car-card">
       <div className="car-photo">
         <img src={car.images[0]} alt={car.name} loading="lazy" />
-        <span className="photo-badge">{vehicleTypeLabel(car.category, lang)}</span>
+        {car.category && <span className="photo-badge">{vehicleTypeLabel(car.category, lang)}</span>}
       </div>
       <div className="car-body">
         <div className="car-meta"><span>{car.brand}</span><span>{car.city ?? ""}</span></div>

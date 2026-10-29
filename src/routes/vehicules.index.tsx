@@ -25,7 +25,7 @@ function Vehicles() {
   const { t, lang } = useI18n();
   const { data: cars, isLoading } = useQuery({ queryKey: ["cars"], queryFn: () => fetchCars() });
   const [cat, setCat] = useState("");
-  const cats = ["", ...new Set((cars ?? []).map((c) => c.category))];
+  const cats = ["", ...new Set((cars ?? []).map((c) => c.category).filter(Boolean))];
   const shown = (cars ?? []).filter((c) => !cat || c.category === cat);
   return (
     <section className="section-ref">

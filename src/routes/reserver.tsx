@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { fetchCars } from "@/lib/cars";
-import { SERVICE_TYPES } from "@/lib/platform";
+import { SERVICE_TYPES, VEHICLE_TYPES } from "@/lib/platform";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/reserver")({
@@ -158,6 +158,12 @@ function Booking() {
                     </label>
                   )}
                   <label className="form-field"><span>{t("Nombre de passagers", "Passengers", "عدد الركاب")}</span><input name="passengers" type="number" min={1} defaultValue={service === "wedding" ? 2 : 4} />{err("passengers")}</label>
+                  <label className="form-field"><span>{t("Type de voiture souhaité", "Preferred car type", "نوع السيارة المفضل")}</span>
+                    <select name="vehicle_type" defaultValue={selected?.category ?? ""}>
+                      <option value="">{none}</option>
+                      {VEHICLE_TYPES.map((v) => <option key={v.value} value={v.value}>{p(v.label)}</option>)}
+                    </select>
+                  </label>
                   <label className="form-field"><span>{t("Véhicule précis (facultatif)", "Specific vehicle (optional)", "سيارة محددة (اختياري)")}</span>
                     <select name="car_name" defaultValue={selected?.name ?? ""}>
                       <option value="">{none}</option>

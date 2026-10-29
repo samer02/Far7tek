@@ -4,7 +4,7 @@ import { z } from "zod";
 import { CheckCircle2, ImagePlus, User, Car, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { PARTNER_SERVICES, VEHICLE_TYPES } from "@/lib/platform";
+import { PARTNER_SERVICES } from "@/lib/platform";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/devenir-partenaire")({
@@ -36,7 +36,6 @@ function makeSchema(t: T) {
     model: z.string().trim().min(1, t("Modèle requis", "Model required", "الطراز مطلوب")).max(60),
     year: z.coerce.number().int().min(1920, t("Année invalide", "Invalid year", "سنة غير صالحة")).max(new Date().getFullYear() + 1, t("Année invalide", "Invalid year", "سنة غير صالحة")),
     color: z.string().trim().min(1, t("Couleur requise", "Colour required", "اللون مطلوب")).max(40),
-    vehicle_type: z.string().min(1, t("Type requis", "Type required", "النوع مطلوب")),
     seats: z.coerce.number().int().min(1).max(60),
     vehicle_condition: z.string().min(1, t("État requis", "Condition required", "الحالة مطلوبة")),
     availability: z.string().trim().min(2, t("Disponibilités requises", "Availability required", "التوفر مطلوب")).max(300),
@@ -82,7 +81,7 @@ function PartnerApply() {
     if (Object.keys(errs).length || !parsed.success) return;
     setBusy(true);
     const id = crypto.randomUUID();
-    const { error } = await supabase.from("car_proposals").insert({ id, ...parsed.data, services, travel_zone: parsed.data.city, schedules: parsed.data.availability, status: "pending" });
+    const { error } = await supabase.from("car_proposals").insert({ id, ...parsed.data, vehicle_type: "", services, travel_zone: parsed.data.city, schedules: parsed.data.availability, status: "pending" });
     if (error) { setBusy(false); setErrors({ form: t("L’envoi a échoué, merci de réessayer.", "Sending failed, please try again.", "فشل الإرسال، يرجى المحاولة مجدداً.") }); return; }
     for (const f of files) {
       const ext = f.file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
@@ -149,12 +148,6 @@ function PartnerApply() {
               <label className="form-field"><span>{t("Modèle", "Model", "الطراز")}</span><input name="model" />{err("model")}</label>
               <label className="form-field"><span>{t("Année", "Year", "السنة")}</span><input name="year" type="number" />{err("year")}</label>
               <label className="form-field"><span>{t("Couleur", "Colour", "اللون")}</span><input name="color" />{err("color")}</label>
-              <label className="form-field"><span>{t("Type de véhicule", "Vehicle type", "نوع السيارة")}</span>
-                <select name="vehicle_type" defaultValue="">
-                  <option value="">{t("Choisir…", "Choose…", "اختر…")}</option>
-                  {VEHICLE_TYPES.map((v) => <option key={v.value} value={v.value}>{p(v.label)}</option>)}
-                </select>{err("vehicle_type")}
-              </label>
               <label className="form-field"><span>{t("Nombre de places", "Seats", "عدد المقاعد")}</span><input name="seats" type="number" min={1} defaultValue={4} />{err("seats")}</label>
               <label className="form-field"><span>{t("État du véhicule", "Condition", "حالة السيارة")}</span>
                 <select name="vehicle_condition" defaultValue="">
