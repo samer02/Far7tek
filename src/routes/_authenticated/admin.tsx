@@ -191,7 +191,7 @@ function Partners({ proposals, refresh }: Ctx) {
             <div><small>{t("Téléphone", "Phone", "الهاتف")}</small><a href={`tel:${cur.phone}`} dir="ltr">{cur.phone}</a></div>
             <div><small>{t("E-mail", "Email", "البريد")}</small><a href={`mailto:${cur.email}`}>{cur.email}</a></div>
             <div><small>{t("Ville / adresse", "City / address", "المدينة / العنوان")}</small>{cur.city} · {cur.address}</div>
-            <div><small>{t("Véhicule", "Vehicle", "السيارة")}</small>{cur.year} · {cur.color} · {vehicleTypeLabel(cur.vehicle_type, lang)} · {cur.seats} {t("places", "seats", "مقاعد")} · {cur.vehicle_condition}</div>
+            <div><small>{t("Véhicule", "Vehicle", "السيارة")}</small>{cur.year} · {cur.color} · {cur.vehicle_type ? `${vehicleTypeLabel(cur.vehicle_type, lang)} · ` : ""}{cur.seats} {t("places", "seats", "مقاعد")} · {cur.vehicle_condition}</div>
             <div><small>{t("Services", "Services", "الخدمات")}</small>{svc(cur.services)}</div>
             <div><small>{t("Disponibilités / tarif", "Availability / price", "التوفر / السعر")}</small>{cur.availability} · {cur.desired_rate ? fmtPrice(cur.desired_rate, lang) : t("non communiqué", "not given", "غير محدد")}</div>
             <div className="form-wide"><small>{t("Description", "Description", "الوصف")}</small>{cur.description}</div>
