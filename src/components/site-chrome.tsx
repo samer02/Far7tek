@@ -1,8 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ChevronDown, Menu, UserRound, X } from "lucide-react";
-import logo from "@/assets/far7tek-logo.png";
+import { ChevronDown, Heart, Menu, UserRound, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +18,14 @@ import { ThemeToggle } from "@/lib/theme";
 export const SLOGAN = "فرحتك تهمّنا ❤️";
 export const SLOGAN_LONG = "من دارك لفرحتك، ومن فرحتك لدارك";
 
-export function Brand({ onClick }: { withSlogan?: boolean; onClick?: () => void }) {
+export function Brand({ withSlogan = false, onClick }: { withSlogan?: boolean; onClick?: () => void }) {
   return (
     <Link to="/" className="brand" aria-label="Far7tek" onClick={onClick}>
-      <img className="brand-logo" src={logo} alt="Far7tek — فرحتك تهمّنا" width={480} height={437} />
+      <span className="brand-mark"><Heart /></span>
+      <span className="brand-word">
+        Far<b>7</b>tek
+        {withSlogan && <small>{SLOGAN}</small>}
+      </span>
     </Link>
   );
 }
