@@ -44,7 +44,7 @@ function AuthPage() {
     const f = new FormData(e.currentTarget);
     const email = String(f.get("email") ?? "").trim();
     const password = String(f.get("password") ?? "");
-    if (!/^\S+@\S+\.\S+$/.test(email)) return toast.error("E-mail invalide");
+    if (!/^\S+@\S+\.\S+$/.test(email)) { toast.error("E-mail invalide"); return; }
     setBusy(true);
     try {
       if (mode === "forgot") {
