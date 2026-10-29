@@ -148,7 +148,7 @@ function Requests({ bookings, assignments, partners, refresh }: Ctx) {
             <td>{date(b.wedding_date)}<small>{b.wedding_time.slice(0, 5)}{b.return_time ? ` / ${b.return_time.slice(0, 5)}` : ""}</small></td>
             <td>{b.pickup_address}<small>→ {b.venue} ({b.city}) · {b.trip_type === "round_trip" ? t("A/R", "Return", "ذهاب وإياب") : t("Aller", "One way", "ذهاب")}</small>{b.message && <small>{b.message}</small>}</td>
             <td>{name(partnerOf(b.id))}</td>
-            <td><select className="admin-select" value={b.status} onChange={(e) => run(() => setStatus({ data: { id: b.id, status: e.target.value as "pending", note: "" } }), t("Statut mis à jour", "Status updated", "تم تحديث الحالة"), refresh)}>
+            <td><select className="admin-select" value={b.status} onChange={(e) => { const val = e.target.value as "pending"; run(async () => { try { await setStatus({ data: { id: b.id, status: val, note: "" } }); } catch { const { error } = await supabase.rpc("admin_set_booking_status", { _id: b.id, _status: val, _note: "" }); if (error) throw error; } }, t("Statut mis à jour", "Status updated", "تم تحديث الحالة"), refresh); }}>
               {Object.entries(BOOKING_STATUS).filter(([k]) => k !== "new").map(([k, v]) => <option key={k} value={k}>{p(v)}</option>)}
             </select></td>
           </tr>
@@ -201,9 +201,9 @@ function Partners({ proposals, refresh }: Ctx) {
           </div>
           {cur.status !== "approved" && (
             <div className="action-row mt-4">
-              <Button className="ref-btn" onClick={() => run(async () => { const r = await approve({ data: { id: cur.id, origin: window.location.origin } }); if (r.invited) toast.info(t("Invitation envoyée par e-mail au propriétaire", "Invitation emailed to the owner", "تم إرسال الدعوة إلى المالك عبر البريد")); }, t("Dossier accepté", "Application approved", "تم قبول الملف"), refresh)}>{t("Accepter", "Approve", "قبول")}</Button>
-              <Button variant="outline" className="ref-btn" onClick={() => { const m = window.prompt(t("Motif du refus ?", "Reason for declining?", "سبب الرفض؟"))?.trim(); if (m) run(() => review({ data: { id: cur.id, action: "reject", message: m } }), t("Dossier refusé", "Application declined", "تم رفض الملف"), refresh); }}>{t("Refuser", "Decline", "رفض")}</Button>
-              <Button variant="outline" className="ref-btn" onClick={() => { const m = window.prompt(t("Informations à demander ?", "What information do you need?", "ما المعلومات المطلوبة؟"))?.trim(); if (m) run(() => review({ data: { id: cur.id, action: "info", message: m } }), t("Demande envoyée", "Request sent", "تم إرسال الطلب"), refresh); }}>{t("Demander des compléments", "Request more info", "طلب معلومات إضافية")}</Button>
+              <Button className="ref-btn" onClick={() => run(async () => { try { const r = await approve({ data: { id: cur.id, origin: window.location.origin } }); if (r.invited) toast.info(t("Invitation envoyée par e-mail au propriétaire", "Invitation emailed to the owner", "تم إرسال الدعوة إلى المالك عبر البريد")); } catch { const { error } = await supabase.rpc("admin_approve_partner", { _id: cur.id }); if (error) throw error; } }, t("Dossier accepté", "Application approved", "تم قبول الملف"), refresh)}>{t("Accepter", "Approve", "قبول")}</Button>
+              <Button variant="outline" className="ref-btn" onClick={() => { const m = window.prompt(t("Motif du refus ?", "Reason for declining?", "سبب الرفض؟"))?.trim(); if (m) run(async () => { try { await review({ data: { id: cur.id, action: "reject", message: m } }); } catch { const { error } = await supabase.rpc("admin_review_partner", { _id: cur.id, _action: "reject", _message: m }); if (error) throw error; } }, t("Dossier refusé", "Application declined", "تم رفض الملف"), refresh); }}>{t("Refuser", "Decline", "رفض")}</Button>
+              <Button variant="outline" className="ref-btn" onClick={() => { const m = window.prompt(t("Informations à demander ?", "What information do you need?", "ما المعلومات المطلوبة؟"))?.trim(); if (m) run(async () => { try { await review({ data: { id: cur.id, action: "info", message: m } }); } catch { const { error } = await supabase.rpc("admin_review_partner", { _id: cur.id, _action: "info", _message: m }); if (error) throw error; } }, t("Demande envoyée", "Request sent", "تم إرسال الطلب"), refresh); }}>{t("Demander des compléments", "Request more info", "طلب معلومات إضافية")}</Button>
               <Button asChild variant="ghost" className="ref-btn"><a href={`mailto:${cur.email}?subject=Far7tek`}>{t("Contacter", "Contact", "تواصل")}</a></Button>
             </div>
           )}
@@ -258,8 +258,8 @@ function Vehicles({ cars, changes, refresh }: Ctx) {
               <strong>{cars.find((x) => x.id === c.car_id)?.name}</strong>
               <p>{Object.entries(c.changes as Record<string, unknown>).map(([k, v]) => `${k} : ${v}`).join(" · ")}</p>
               <div className="action-row">
-                <Button className="ref-btn" onClick={() => run(() => reviewCh({ data: { id: c.id, approve: true } }), t("Modification appliquée", "Change applied", "تم تطبيق التعديل"), refresh)}>{t("Valider", "Approve", "موافقة")}</Button>
-                <Button variant="outline" className="ref-btn" onClick={() => run(() => reviewCh({ data: { id: c.id, approve: false } }), t("Modification refusée", "Change declined", "تم رفض التعديل"), refresh)}>{t("Refuser", "Decline", "رفض")}</Button>
+                <Button className="ref-btn" onClick={() => run(async () => { try { await reviewCh({ data: { id: c.id, approve: true } }); } catch { const { error } = await supabase.rpc("admin_review_change_request", { _id: c.id, _approve: true }); if (error) throw error; } }, t("Modification appliquée", "Change applied", "تم تطبيق التعديل"), refresh)}>{t("Valider", "Approve", "موافقة")}</Button>
+                <Button variant="outline" className="ref-btn" onClick={() => run(async () => { try { await reviewCh({ data: { id: c.id, approve: false } }); } catch { const { error } = await supabase.rpc("admin_review_change_request", { _id: c.id, _approve: false }); if (error) throw error; } }, t("Modification refusée", "Change declined", "تم رفض التعديل"), refresh)}>{t("Refuser", "Decline", "رفض")}</Button>
               </div>
             </div>
           ))}
@@ -274,8 +274,8 @@ function Vehicles({ cars, changes, refresh }: Ctx) {
               <td><strong>{c.name}</strong><small>{vehicleTypeLabel(c.category, lang)}</small></td><td>{c.city}</td><td>{c.seats}</td><td>{c.owner_id ? t("Partenaire", "Partner", "شريك") : t("Flotte", "Fleet", "الأسطول")}</td>
               <td><StatusPill label={labelOf(CAR_VALIDATION, c.validation_status, lang)} /></td>
               <td><div className="action-row">
-                {c.validation_status !== "active" && <Button className="ref-btn" onClick={() => run(() => setVal({ data: { carId: c.id, status: "active" } }), t("Véhicule publié", "Vehicle published", "تم نشر السيارة"), refresh)}>{t("Valider / publier", "Approve / publish", "موافقة / نشر")}</Button>}
-                {c.validation_status !== "disabled" && <Button variant="outline" className="ref-btn" onClick={() => run(() => setVal({ data: { carId: c.id, status: "disabled" } }), t("Véhicule désactivé", "Vehicle disabled", "تم تعطيل السيارة"), refresh)}>{t("Désactiver", "Disable", "تعطيل")}</Button>}
+                {c.validation_status !== "active" && <Button className="ref-btn" onClick={() => run(async () => { try { await setVal({ data: { carId: c.id, status: "active" } }); } catch { const { error } = await supabase.rpc("admin_set_car_validation", { _car: c.id, _status: "active" }); if (error) throw error; } }, t("Véhicule publié", "Vehicle published", "تم نشر السيارة"), refresh)}>{t("Valider / publier", "Approve / publish", "موافقة / نشر")}</Button>}
+                {c.validation_status !== "disabled" && <Button variant="outline" className="ref-btn" onClick={() => run(async () => { try { await setVal({ data: { carId: c.id, status: "disabled" } }); } catch { const { error } = await supabase.rpc("admin_set_car_validation", { _car: c.id, _status: "disabled" }); if (error) throw error; } }, t("Véhicule désactivé", "Vehicle disabled", "تم تعطيل السيارة"), refresh)}>{t("Désactiver", "Disable", "تعطيل")}</Button>}
               </div></td>
             </tr>
           ))}</tbody>
@@ -306,7 +306,7 @@ function Assign({ bookings, assignments, partners, cars, refresh }: Ctx) {
               {!options.length && <small>{t("Aucun partenaire compatible (places).", "No compatible partner (seats).", "لا يوجد شريك مناسب (المقاعد).")}</small>}
               {options.slice(0, 5).map(({ x, car, score }) => (
                 <Button key={x.id} variant={score >= 3 ? "default" : "outline"} className="ref-btn"
-                  onClick={() => run(() => assign({ data: { bookingId: b.id, partnerId: x.partner_user_id!, carId: car?.id ?? null } }), t("Demande attribuée", "Request assigned", "تم إسناد الطلب"), refresh)}>
+                  onClick={() => run(async () => { try { await assign({ data: { bookingId: b.id, partnerId: x.partner_user_id!, carId: car?.id ?? null } }); } catch { if (!car?.id) throw new Error("Véhicule introuvable"); const { error } = await supabase.rpc("admin_assign_trip", { _booking: b.id, _partner: x.partner_user_id!, _car: car.id }); if (error) throw error; } }, t("Demande attribuée", "Request assigned", "تم إسناد الطلب"), refresh)}>
                   {x.first_name} {x.last_name} · {car?.name ?? "—"} ({car?.city}) {score >= 3 ? `★ ${t("suggéré", "suggested", "مقترح")}` : ""}
                 </Button>
               ))}

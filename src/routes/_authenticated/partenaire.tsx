@@ -95,16 +95,16 @@ function PartnerDashboard() {
             <div className="action-row">
               {a.status === "proposed" && (
                 <>
-                  <Button className="ref-btn" onClick={() => act(() => respond({ data: { id: a.id, accept: true, reason: "" } }), t("Demande acceptée", "Request accepted", "تم قبول الطلب"))}>{t("Accepter", "Accept", "قبول")}</Button>
+                  <Button className="ref-btn" onClick={() => act(async () => { try { await respond({ data: { id: a.id, accept: true, reason: "" } }); } catch { const { error } = await supabase.rpc("partner_respond_assignment", { _id: a.id, _accept: true, _reason: "" }); if (error) throw error; } }, t("Demande acceptée", "Request accepted", "تم قبول الطلب"))}>{t("Accepter", "Accept", "قبول")}</Button>
                   <Button variant="outline" className="ref-btn" onClick={() => {
                     const reason = window.prompt(t("Motif du refus ?", "Reason for declining?", "سبب الرفض؟"))?.trim();
-                    if (reason) act(() => respond({ data: { id: a.id, accept: false, reason } }), t("Demande refusée", "Request declined", "تم رفض الطلب"));
+                    if (reason) act(async () => { try { await respond({ data: { id: a.id, accept: false, reason } }); } catch { const { error } = await supabase.rpc("partner_respond_assignment", { _id: a.id, _accept: false, _reason: reason }); if (error) throw error; } }, t("Demande refusée", "Request declined", "تم رفض الطلب"));
                   }}>{t("Refuser", "Decline", "رفض")}</Button>
                 </>
               )}
               {a.status === "accepted" && (PARTNER_TRIP_TRANSITIONS[b!.status] ?? []).map((s) => (
                 <Button key={s} variant={s === "cancelled" ? "outline" : "default"} className="ref-btn"
-                  onClick={() => act(() => moveTrip({ data: { bookingId: b!.id, status: s as "confirmed" | "in_progress" | "completed" | "cancelled" } }), t("Statut mis à jour", "Status updated", "تم تحديث الحالة"))}>
+                  onClick={() => act(async () => { try { await moveTrip({ data: { bookingId: b!.id, status: s as "confirmed" | "in_progress" | "completed" | "cancelled" } }); } catch { const { error } = await supabase.rpc("partner_update_trip_status", { _booking: b!.id, _status: s }); if (error) throw error; } }, t("Statut mis à jour", "Status updated", "تم تحديث الحالة"))}>
                   {labelOf(BOOKING_STATUS, s, lang)}
                 </Button>
               ))}
@@ -160,7 +160,7 @@ function PartnerVehicle({ uid }: { uid: string }) {
       const path = `${uid}/${car.id}/${crypto.randomUUID()}.${f.name.split(".").pop()}`;
       const up = await supabase.storage.from("car-images").upload(path, f, { contentType: f.type });
       if (up.error) { toast.error(t("Envoi impossible", "Upload failed", "تعذّر الإرسال")); continue; }
-      await savePhoto({ data: { carId: car.id, path } });
+      try { await savePhoto({ data: { carId: car.id, path } }); } catch { const { error } = await supabase.rpc("partner_add_car_photo", { _car: car.id, _path: path }); if (error) { toast.error(t("Envoi impossible", "Upload failed", "تعذّر الإرسال")); continue; } }
     }
     toast.success(t("Photos ajoutées", "Photos added", "تمت إضافة الصور"));
     qc.invalidateQueries({ queryKey: ["my-cars"] });
@@ -198,7 +198,7 @@ function PartnerVehicle({ uid }: { uid: string }) {
       <form className="ref-form mt-6" onSubmit={async (e): Promise<void> => {
         e.preventDefault();
         const v = String(new FormData(e.currentTarget).get("availability") ?? "");
-        try { await saveAvail({ data: { carId: car.id, availability: v } }); toast.success(t("Disponibilités mises à jour", "Availability updated", "تم تحديث التوفر")); qc.invalidateQueries({ queryKey: ["my-cars"] }); } catch (err) { toast.error((err as Error).message); }
+        try { await saveAvail({ data: { carId: car.id, availability: v } }); toast.success(t("Disponibilités mises à jour", "Availability updated", "تم تحديث التوفر")); qc.invalidateQueries({ queryKey: ["my-cars"] }); } catch { try { const { error } = await supabase.rpc("partner_update_car_availability", { _car: car.id, _availability: v }); if (error) throw error; toast.success(t("Disponibilités mises à jour", "Availability updated", "تم تحديث التوفر")); qc.invalidateQueries({ queryKey: ["my-cars"] }); } catch (err) { toast.error((err as Error).message); } }
       }}>
         <label className="form-field form-wide"><span>{t("Disponibilités", "Availability", "التوفر")}</span><input name="availability" defaultValue={car.availability} /></label>
         <Button className="ref-btn">{t("Enregistrer les disponibilités", "Save availability", "حفظ التوفر")}</Button>
