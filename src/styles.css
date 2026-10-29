@@ -316,9 +316,10 @@ html[dir="rtl"] .car-meta { letter-spacing: 0; }
 .detail-title h1 { margin-top: 12px; }
 .detail-title p { margin-top: 10px; max-width: 640px; }
 .detail-gallery { display: grid; grid-template-columns: 2.4fr 1fr; gap: 16px; }
-.detail-gallery > img { width: 100%; height: 100%; aspect-ratio: 1.5; border-radius: 28px; }
+.detail-gallery.single-photo { display: block; }
+.detail-gallery > img { width: 100%; height: 100%; aspect-ratio: 1.5; border-radius: 28px; object-fit: cover; }
 .detail-thumbs { display: grid; gap: 16px; grid-template-rows: repeat(3, 1fr); }
-.detail-thumbs img { height: 100%; width: 100%; border-radius: 20px; }
+.detail-thumbs img { height: 100%; width: 100%; border-radius: 20px; object-fit: cover; }
 
 /* ---------- Forms ---------- */
 .form-panel { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 40px; max-width: 920px; margin: 0 auto; box-shadow: var(--shadow-md); }

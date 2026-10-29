@@ -32,6 +32,9 @@ function CarDetail() {
         <Link to="/vehicules" className="tile-link">{t("Retour aux véhicules", "Back to vehicles", "العودة إلى السيارات")}</Link>
       </div>
     );
+
+  const extraImages = (car.images ?? []).slice(1, 4);
+
   return (
     <section className="container-ref pb-16">
       <div className="breadcrumb-ref"><Link to="/vehicules">{t("Véhicules", "Vehicles", "السيارات")}</Link> / {car.name}</div>
@@ -45,11 +48,13 @@ function CarDetail() {
           <Button asChild className="ref-btn"><Link to="/reserver" search={{ car: car.slug }}>{t("Réserver ce véhicule", "Book this vehicle", "احجز هذه السيارة")}</Link></Button>
         </div>
       </div>
-      <div className="detail-gallery">
+      <div className={`detail-gallery ${extraImages.length ? "" : "single-photo"}`}>
         <img src={car.images[0]} alt={car.name} />
-        <div className="detail-thumbs">
-          {car.images.slice(1, 4).map((u) => <img key={u} src={u} alt={car.name} loading="lazy" />)}
-        </div>
+        {extraImages.length > 0 && (
+          <div className="detail-thumbs">
+            {extraImages.map((u) => <img key={u} src={u} alt={car.name} loading="lazy" />)}
+          </div>
+        )}
       </div>
       <div className="dossier-grid mt-8">
         <div><small>{t("Année", "Year", "السنة")}</small>{car.year ?? "—"}</div>
