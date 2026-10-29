@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import logoFull from "@/assets/far7tek-logo.png.asset.json";
+import logoFull from "@/assets/far7tek-logo.png";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
@@ -81,7 +81,7 @@ function AuthPage() {
 
   return (
     <div className="auth-panel">
-      <img className="logo-full" src={logoFull.url} alt="Far7tek — فرحتك تهمّنا" width={900} height={826} />
+      <img className="logo-full" src={logoFull} alt="Far7tek — فرحتك تهمّنا" width={480} height={437} />
       <h1 className="mt-2">{mode === "up" ? t("Créer un compte", "Create an account", "إنشاء حساب") : mode === "forgot" ? t("Mot de passe oublié", "Forgot password", "نسيت كلمة المرور") : t("Connexion", "Sign in", "تسجيل الدخول")}</h1>
       <p>{mode === "up"
         ? t("Créez votre compte pour réserver et suivre vos demandes.", "Create your account to book and track your requests.", "أنشئ حسابك للحجز ومتابعة طلباتك.")
