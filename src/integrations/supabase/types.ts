@@ -684,6 +684,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_approve_partner: { Args: { _id: string }; Returns: Json }
+      admin_assign_trip: {
+        Args: { _booking: string; _car: string; _partner: string }
+        Returns: undefined
+      }
+      admin_list_clients: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          last_sign_in_at: string
+          requests: number
+          roles: string[]
+        }[]
+      }
+      admin_review_change_request: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
+      admin_review_partner: {
+        Args: { _action: string; _id: string; _message: string }
+        Returns: undefined
+      }
+      admin_set_booking_status: {
+        Args: { _id: string; _note: string; _status: string }
+        Returns: undefined
+      }
+      admin_set_car_validation: {
+        Args: { _car: string; _status: string }
+        Returns: undefined
+      }
+      assert_admin: { Args: never; Returns: undefined }
+      claim_partner_account: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -694,6 +728,23 @@ export type Database = {
       is_assigned_partner: {
         Args: { _booking: string; _user: string }
         Returns: boolean
+      }
+      link_partner_account: { Args: { _user: string }; Returns: number }
+      partner_add_car_photo: {
+        Args: { _car: string; _path: string }
+        Returns: undefined
+      }
+      partner_respond_assignment: {
+        Args: { _accept: boolean; _id: string; _reason: string }
+        Returns: undefined
+      }
+      partner_update_car_availability: {
+        Args: { _availability: string; _car: string }
+        Returns: undefined
+      }
+      partner_update_trip_status: {
+        Args: { _booking: string; _status: string }
+        Returns: undefined
       }
     }
     Enums: {
