@@ -420,7 +420,8 @@ html[dir="rtl"] .car-meta { letter-spacing: 0; }
 /* ---------- Responsive ---------- */
 @media (max-width: 1180px) {
   .desktop-nav a { padding-inline: 9px; font-size: 13px; }
-  .header-cta .login-btn { display: none; }
+  .header-cta .login-btn { padding-inline: 12px; }
+  .header-cta .login-btn .btn-label { display: none; }
 }
 @media (max-width: 1100px) {
   .four-grid, .admin-list-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
