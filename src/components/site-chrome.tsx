@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronDown, Menu, UserRound, X } from "lucide-react";
-import logoIcon from "@/assets/far7tek-icon.png.asset.json";
+import logoIcon from "@/assets/far7tek-icon-tight.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,7 @@ export const SLOGAN_LONG = "من دارك لفرحتك، ومن فرحتك لد�
 export function Brand({ withSlogan = false, onClick }: { withSlogan?: boolean; onClick?: () => void }) {
   return (
     <Link to="/" className="brand" aria-label="Far7tek" onClick={onClick}>
-      <span className="brand-mark"><img src={logoIcon.url} alt="" width={64} height={64} /></span>
+      <span className="brand-mark"><img src={logoIcon.url} alt="" width={520} height={360} /></span>
       <span className="brand-word">
         Far<b>7</b>tek
         {withSlogan && <small>{SLOGAN}</small>}
