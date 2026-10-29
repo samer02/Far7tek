@@ -16,6 +16,7 @@ import { Route as DevenirPartenaireRouteImport } from './routes/devenir-partenai
 import { Route as ReinitialiserRouteImport } from './routes/reinitialiser'
 import { Route as ReserverRouteImport } from './routes/reserver'
 import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
+import { Route as AuthenticatedPartenaireRouteImport } from './routes/_authenticated/partenaire'
 import { Route as VehiculesIndexRouteImport } from './routes/vehicules.index'
 import { Route as VehiculesSlugRouteImport } from './routes/vehicules.$slug'
 
@@ -53,6 +54,11 @@ const AuthenticatedCompteRoute = AuthenticatedCompteRouteImport.update({
   path: '/compte',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPartenaireRoute = AuthenticatedPartenaireRouteImport.update({
+  id: '/partenaire',
+  path: '/partenaire',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const VehiculesIndexRoute = VehiculesIndexRouteImport.update({
   id: '/vehicules/',
   path: '/vehicules/',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
   '/compte': typeof AuthenticatedCompteRoute
+  '/partenaire': typeof AuthenticatedPartenaireRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules/': typeof VehiculesIndexRoute
 }
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
   '/compte': typeof AuthenticatedCompteRoute
+  '/partenaire': typeof AuthenticatedPartenaireRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules': typeof VehiculesIndexRoute
 }
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/reinitialiser': typeof ReinitialiserRoute
   '/reserver': typeof ReserverRoute
   '/_authenticated/compte': typeof AuthenticatedCompteRoute
+  '/_authenticated/partenaire': typeof AuthenticatedPartenaireRoute
   '/vehicules/$slug': typeof VehiculesSlugRoute
   '/vehicules/': typeof VehiculesIndexRoute
 }
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/reinitialiser'
     | '/reserver'
     | '/compte'
+    | '/partenaire'
     | '/vehicules/$slug'
     | '/vehicules/'
   fileRoutesByTo: FileRoutesByTo
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/reinitialiser'
     | '/reserver'
     | '/compte'
+    | '/partenaire'
     | '/vehicules/$slug'
     | '/vehicules'
   id:
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/reinitialiser'
     | '/reserver'
     | '/_authenticated/compte'
+    | '/_authenticated/partenaire'
     | '/vehicules/$slug'
     | '/vehicules/'
   fileRoutesById: FileRoutesById
@@ -192,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/partenaire': {
+      id: '/_authenticated/partenaire'
+      path: '/partenaire'
+      fullPath: '/partenaire'
+      preLoaderRoute: typeof AuthenticatedPartenaireRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/vehicules/': {
       id: '/vehicules/'
       path: '/vehicules'
@@ -211,10 +230,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompteRoute: typeof AuthenticatedCompteRoute
+  AuthenticatedPartenaireRoute: typeof AuthenticatedPartenaireRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompteRoute: AuthenticatedCompteRoute,
+  AuthenticatedPartenaireRoute: AuthenticatedPartenaireRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
