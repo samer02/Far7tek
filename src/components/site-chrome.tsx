@@ -83,7 +83,7 @@ export function SiteHeader() {
           </nav>
           <div className="nav-tools">
             <LangSwitch />
-            <span className="icon-btn theme contents-wrapper" style={{ display: "contents" }}><ThemeToggle /></span>
+            <ThemeToggle className="theme" />
             <div className="header-cta action-row">
               {auth?.userId ? (
                 <Button variant="outline" className="ref-btn login-btn" onClick={signOut}>{t("Déconnexion", "Sign out", "خروج")}</Button>
