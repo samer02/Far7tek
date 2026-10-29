@@ -1,12 +1,10 @@
-# Cortège & Cérémonie
-- [x] Analyser les quatre références et activer Lovable Cloud.
-- [x] Créer les tables, rôles sécurisés et espaces médias.
-- [ ] Reproduire l’accueil, la fiche voiture et la proposition propriétaire.
-- [ ] Relier les demandes et uploads à Lovable Cloud.
-- [ ] Construire la connexion et les outils administrateur.
-- [ ] Vérifier les parcours et les formats desktop, tablette et mobile.
-- [x] Attribuer le premier rôle administrateur (admin@gmail.com).
-- [ ] Remplacer les photographies reconstituées par les fichiers originaux lorsqu’ils seront fournis.
-- [x] Nettoyer les migrations copiées et recréer un ensemble vide pour le remix.
-
-Les écrans et leurs connexions restent à construire après la réinitialisation du remix ; aucun écran incomplet n’est importé.
+# Far7tek
+- [x] Lovable Cloud, tables, rôles sécurisés et espaces médias.
+- [x] Attribuer le rôle administrateur (admin@gmail.com).
+- [x] Nettoyer les migrations copiées (remix).
+- [x] Corriger les erreurs de compilation.
+- [x] Nouvelle identité Far7tek (nom, slogans), palette ivoire & or rose, design premium.
+- [x] Mode clair / sombre (clair par défaut).
+- [x] Trois langues : français (défaut), anglais, arabe (RTL).
+- [x] Tester le parcours complet : demande client → candidature partenaire → validation admin → connexion partenaire → traitement du trajet.
+- [ ] Remplacer les photos de démonstration par les vraies photos quand elles seront fournies.

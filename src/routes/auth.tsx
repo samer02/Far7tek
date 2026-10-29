@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { Brand } from "@/components/site-chrome";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): { redirect?: string } => {
@@ -13,10 +15,10 @@ export const Route = createFileRoute("/auth")({
   },
   head: () => ({
     meta: [
-      { title: "Connexion — Cortège & Cérémonie" },
-      { name: "description", content: "Connectez-vous pour suivre vos demandes ou accéder à votre espace partenaire." },
-      { property: "og:title", content: "Connexion — Cortège & Cérémonie" },
-      { property: "og:description", content: "Espace client, partenaire et administration." },
+      { title: "Connexion — Far7tek" },
+      { name: "description", content: "Connectez-vous à Far7tek pour suivre vos demandes ou accéder à votre espace partenaire." },
+      { property: "og:title", content: "Connexion — Far7tek" },
+      { property: "og:description", content: "Espace client, partenaire et administration Far7tek." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
+  const { t } = useI18n();
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -44,23 +47,23 @@ function AuthPage() {
     const f = new FormData(e.currentTarget);
     const email = String(f.get("email") ?? "").trim();
     const password = String(f.get("password") ?? "");
-    if (!/^\S+@\S+\.\S+$/.test(email)) { toast.error("E-mail invalide"); return; }
+    if (!/^\S+@\S+\.\S+$/.test(email)) { toast.error(t("E-mail invalide", "Invalid email", "بريد إلكتروني غير صالح")); return; }
     setBusy(true);
     try {
       if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reinitialiser` });
         if (error) throw error;
-        toast.success("Un lien de réinitialisation vous a été envoyé.");
+        toast.success(t("Un lien de réinitialisation vous a été envoyé.", "A reset link has been sent to you.", "تم إرسال رابط إعادة التعيين إليك."));
         setMode("in");
       } else if (mode === "up") {
-        if (password.length < 8) throw new Error("Mot de passe : 8 caractères minimum");
+        if (password.length < 8) throw new Error(t("Mot de passe : 8 caractères minimum", "Password: 8 characters minimum", "كلمة المرور: 8 أحرف على الأقل"));
         const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + (redirect ?? "/compte") } });
         if (error) throw error;
         if (data.session) await afterLogin();
-        else toast.success("Compte créé : confirmez votre adresse via l’e-mail reçu.");
+        else toast.success(t("Compte créé : confirmez votre adresse via l’e-mail reçu.", "Account created: confirm your address via the email you received.", "تم إنشاء الحساب: أكّد عنوانك عبر البريد المرسل إليك."));
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw new Error("Identifiants incorrects");
+        if (error) throw new Error(t("Identifiants incorrects", "Incorrect credentials", "بيانات الدخول غير صحيحة"));
         await afterLogin();
       }
     } catch (err) {
@@ -72,26 +75,31 @@ function AuthPage() {
 
   async function google() {
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" + (redirect ? `?redirect=${encodeURIComponent(redirect)}` : "") });
-    if (r.error) toast.error("Connexion Google impossible");
+    if (r.error) toast.error(t("Connexion Google impossible", "Google sign-in failed", "تعذّر الدخول عبر Google"));
     else if (!r.redirected) await afterLogin();
   }
 
   return (
     <div className="auth-panel">
-      <span className="eyebrow">Espace client · Partenaire · Administration</span>
-      <h1>{mode === "up" ? "Créer un compte" : mode === "forgot" ? "Mot de passe oublié" : "Connexion"}</h1>
-      <p>{mode === "up" ? "Créez votre compte pour réserver et suivre vos demandes." : "Partenaires : utilisez l’e-mail de votre dossier accepté."}</p>
+      <Brand withSlogan />
+      <h1 className="mt-6">{mode === "up" ? t("Créer un compte", "Create an account", "إنشاء حساب") : mode === "forgot" ? t("Mot de passe oublié", "Forgot password", "نسيت كلمة المرور") : t("Connexion", "Sign in", "تسجيل الدخول")}</h1>
+      <p>{mode === "up"
+        ? t("Créez votre compte pour réserver et suivre vos demandes.", "Create your account to book and track your requests.", "أنشئ حسابك للحجز ومتابعة طلباتك.")
+        : t("Clients, partenaires et administration. Partenaires : utilisez l’e-mail de votre dossier accepté.", "Clients, partners and admin. Partners: use the email from your accepted application.", "للعملاء والشركاء والإدارة. الشركاء: استعملوا البريد الإلكتروني لملفكم المقبول.")}</p>
       <form className="ref-form" onSubmit={submit}>
-        <label className="form-field"><span>E-mail</span><input name="email" type="email" autoComplete="email" required /></label>
+        <label className="form-field"><span>{t("E-mail", "Email", "البريد الإلكتروني")}</span><input name="email" type="email" autoComplete="email" required dir="ltr" /></label>
         {mode !== "forgot" && (
-          <label className="form-field"><span>Mot de passe</span><input name="password" type="password" autoComplete={mode === "up" ? "new-password" : "current-password"} required /></label>
+          <label className="form-field"><span>{t("Mot de passe", "Password", "كلمة المرور")}</span><input name="password" type="password" autoComplete={mode === "up" ? "new-password" : "current-password"} required dir="ltr" /></label>
         )}
-        <Button type="submit" className="ref-btn" disabled={busy}>{busy ? "Patientez…" : mode === "up" ? "Créer mon compte" : mode === "forgot" ? "Envoyer le lien" : "Se connecter"}</Button>
+        <Button type="submit" className="ref-btn" disabled={busy}>
+          {busy ? t("Patientez…", "Please wait…", "يرجى الانتظار…") : mode === "up" ? t("Créer mon compte", "Create my account", "إنشاء حسابي") : mode === "forgot" ? t("Envoyer le lien", "Send the link", "إرسال الرابط") : t("Se connecter", "Sign in", "دخول")}
+        </Button>
       </form>
       <div className="auth-extra">
-        {mode !== "forgot" && <Button variant="outline" className="ref-btn" onClick={google}>Continuer avec Google</Button>}
-        <Button variant="link" onClick={() => setMode(mode === "up" ? "in" : "up")}>{mode === "up" ? "J’ai déjà un compte" : "Créer un compte client"}</Button>
-        {mode === "in" && <Button variant="link" onClick={() => setMode("forgot")}>Mot de passe oublié ?</Button>}
+        {mode !== "forgot" && <Button variant="outline" className="ref-btn" onClick={google}>{t("Continuer avec Google", "Continue with Google", "المتابعة عبر Google")}</Button>}
+        <Button variant="link" onClick={() => setMode(mode === "up" ? "in" : "up")}>{mode === "up" ? t("J’ai déjà un compte", "I already have an account", "لدي حساب بالفعل") : t("Créer un compte client", "Create a client account", "إنشاء حساب عميل")}</Button>
+        {mode === "in" && <Button variant="link" onClick={() => setMode("forgot")}>{t("Mot de passe oublié ?", "Forgot password?", "نسيت كلمة المرور؟")}</Button>}
+        {mode === "forgot" && <Button variant="link" onClick={() => setMode("in")}>{t("Retour à la connexion", "Back to sign in", "العودة إلى الدخول")}</Button>}
       </div>
     </div>
   );
