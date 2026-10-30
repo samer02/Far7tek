@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Users, Handshake, CalendarCheck, ShieldCheck, Check, ArrowRight, ArrowLeft, Clock } from "lucide-react";
+import { Car, Users, Handshake, CalendarCheck, ShieldCheck, Check, ArrowRight, ArrowLeft, Clock, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { heroImage } from "@/lib/platform";
+import { CAR_CATEGORIES, carInCategory, heroImage } from "@/lib/platform";
 import { fetchCars } from "@/lib/cars";
 import { CarCard } from "@/components/car-card";
 import { SLOGAN, SLOGAN_LONG } from "@/components/site-chrome";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { t, dir } = useI18n();
+  const { t, p, dir } = useI18n();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
   const { data: cars } = useQuery({ queryKey: ["cars"], queryFn: () => fetchCars() });
 
