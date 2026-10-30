@@ -24,8 +24,8 @@ export function NumberInput(props: Omit<InputHTMLAttributes<HTMLInputElement>, "
 /** Colour swatches; the chosen colour is sent with the form under `name`. */
 export function ColorPalette({ name, defaultValue = "" }: { name: string; defaultValue?: string }) {
   const { p, t } = useI18n();
-  const [value, setValue] = useState(() => findCarColor(defaultValue)?.value ?? defaultValue);
-  const current = CAR_COLORS.find((c) => c.value === value);
+  const [value, setValue] = useState(defaultValue);
+  const current = findCarColor(value);
   return (
     <div className="color-palette">
       <input type="hidden" name={name} value={value} />
@@ -35,18 +35,18 @@ export function ColorPalette({ name, defaultValue = "" }: { name: string; defaul
             key={c.value}
             type="button"
             role="radio"
-            aria-checked={value === c.value}
+            aria-checked={current?.value === c.value}
             aria-label={p(c.label)}
             title={p(c.label)}
             className="color-swatch"
             style={{ backgroundColor: c.hex }}
             onClick={() => setValue(c.value)}
           >
-            {value === c.value && <Check />}
+            {current?.value === c.value && <Check />}
           </button>
         ))}
       </div>
-      <small className="color-current">{current ? p(current.label) : value || t("Choisissez une couleur", "Pick a colour", "اختر لوناً")}</small>
+      <small className="color-current">{current && current.value === value ? p(current.label) : value || t("Choisissez une couleur", "Pick a colour", "اختر لوناً")}</small>
     </div>
   );
 }

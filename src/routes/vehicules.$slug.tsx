@@ -58,7 +58,7 @@ function CarDetail() {
       </div>
       <div className="dossier-grid mt-8">
         <div><small>{t("Année", "Year", "السنة")}</small>{car.year ?? "—"}</div>
-        <div><small>{t("Couleur", "Colour", "اللون")}</small>{car.color ?? "—"}</div>
+        <div><small>{t("Couleur", "Colour", "اللون")}</small>{car.color ? <><ColorDot color={car.color} />{carColorLabel(car.color, lang)}</> : "—"}</div>
         <div><small>{t("Places", "Seats", "المقاعد")}</small>{car.seats ?? "—"}</div>
         <div><small>{t("Ville", "City", "المدينة")}</small>{car.city ?? "—"}</div>
         <div><small>{t("Disponibilité", "Availability", "التوفر")}</small>{car.availability}</div>
