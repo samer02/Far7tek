@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { fetchCars } from "@/lib/cars";
-import { fmtPrice, partnerServiceLabel, vehicleTypeLabel } from "@/lib/platform";
+import { carColorLabel, fmtPrice, partnerServiceLabel, vehicleTypeLabel } from "@/lib/platform";
+import { ColorDot } from "@/components/form-inputs";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/vehicules/$slug")({
