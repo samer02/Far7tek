@@ -11,6 +11,7 @@ import { ASSIGNMENT_STATUS, BOOKING_STATUS, CAR_VALIDATION, PARTNER_TRIP_TRANSIT
 import { addCarPhoto, respondAssignment, updateCarAvailability, updateTripStatus } from "@/lib/partner.functions";
 import { StatusPill } from "@/components/site-chrome";
 import { NotificationsPanel } from "@/components/notifications-panel";
+import { ColorPalette, NumberInput } from "@/components/form-inputs";
 import { labelOf, useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/partenaire")({
