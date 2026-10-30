@@ -5,3 +5,4 @@
 - Styling uses semantic tokens and shared classes in `src/styles.css` with logical (inline-start/end) properties — required for correct Arabic RTL layout.
 - App images must be bundled files imported from `src/assets`.
 - Supabase connection is 100% external via standard Supabase JS client and PostgreSQL functions.
+- Public car categories (wedding / family) are derived from each car's `services` via `carInCategory` in `src/lib/platform.ts`, not stored separately — one source of truth for filters, badges and home sections.

@@ -11,6 +11,7 @@ import { ASSIGNMENT_STATUS, BOOKING_STATUS, CAR_VALIDATION, PARTNER_TRIP_TRANSIT
 import { addCarPhoto, respondAssignment, updateCarAvailability, updateTripStatus } from "@/lib/partner.functions";
 import { StatusPill } from "@/components/site-chrome";
 import { NotificationsPanel } from "@/components/notifications-panel";
+import { ColorPalette, NumberInput } from "@/components/form-inputs";
 import { labelOf, useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/partenaire")({
@@ -205,9 +206,9 @@ function PartnerVehicle({ uid }: { uid: string }) {
       </form>
       <form className="ref-form form-section" onSubmit={submitChange}>
         <h3 className="form-wide">{t("Modifications soumises à validation", "Changes subject to approval", "تعديلات تخضع للموافقة")}</h3>
-        <label className="form-field"><span>{t("Couleur", "Colour", "اللون")}</span><input name="color" defaultValue={car.color ?? ""} /></label>
-        <label className="form-field"><span>{t("Places", "Seats", "المقاعد")}</span><input name="seats" type="number" defaultValue={car.seats ?? 4} /></label>
-        <label className="form-field"><span>{t("Tarif indicatif (DT)", "Indicative price (DT)", "السعر التقريبي (د.ت)")}</span><input name="price_from" type="number" defaultValue={car.price_from ?? 0} /></label>
+        <div className="form-field form-wide"><span>{t("Couleur", "Colour", "اللون")}</span><ColorPalette name="color" defaultValue={car.color ?? ""} /></div>
+        <label className="form-field"><span>{t("Places", "Seats", "المقاعد")}</span><NumberInput name="seats" maxLength={2} defaultValue={car.seats ?? ""} placeholder="4" /></label>
+        <label className="form-field"><span>{t("Tarif indicatif (DT)", "Indicative price (DT)", "السعر التقريبي (د.ت)")}</span><NumberInput name="price_from" maxLength={6} defaultValue={car.price_from ?? ""} placeholder={t("0 DT", "0 DT", "0 د.ت")} /></label>
         <label className="form-field form-wide"><span>{t("Description", "Description", "الوصف")}</span><textarea name="description" defaultValue={car.description} /></label>
         <Button className="ref-btn">{t("Soumettre à l’administration", "Submit to the admin team", "إرسال إلى الإدارة")}</Button>
       </form>

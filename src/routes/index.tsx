@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Users, Handshake, CalendarCheck, ShieldCheck, Check, ArrowRight, ArrowLeft, Clock } from "lucide-react";
+import { Car, Users, Handshake, CalendarCheck, ShieldCheck, Check, ArrowRight, ArrowLeft, Clock, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { heroImage } from "@/lib/platform";
+import { CAR_CATEGORIES, carInCategory, heroImage } from "@/lib/platform";
 import { fetchCars } from "@/lib/cars";
 import { CarCard } from "@/components/car-card";
 import { SLOGAN, SLOGAN_LONG } from "@/components/site-chrome";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { t, dir } = useI18n();
+  const { t, p, dir } = useI18n();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
   const { data: cars } = useQuery({ queryKey: ["cars"], queryFn: () => fetchCars() });
 
@@ -155,17 +155,26 @@ function Home() {
       </section>
 
       <section className="section-ref">
-        <div className="container-ref">
-          <div className="registry-toolbar">
-            <div className="section-heading !mb-0">
-              <span className="eyebrow">{t("La collection", "The collection", "المجموعة")}</span>
-              <h2>{t("Véhicules à l’honneur", "Featured vehicles", "سيارات مميّزة")}</h2>
-            </div>
-            <Button asChild variant="outline" className="ref-btn"><Link to="/vehicules">{t("Tout voir", "See all", "عرض الكل")} <Arrow /></Link></Button>
-          </div>
-          <div className="cars-grid mt-6">
-            {(cars ?? []).slice(0, 3).map((c) => <CarCard key={c.id} car={c} />)}
-          </div>
+        <div className="container-ref grid gap-16">
+          {CAR_CATEGORIES.map((cat) => {
+            const list = (cars ?? []).filter((c) => carInCategory(c.services, cat.value));
+            return (
+              <div key={cat.value}>
+                <div className="registry-toolbar">
+                  <div className="section-heading !mb-0">
+                    <span className="eyebrow">{cat.value === "wedding" ? <Heart className="h-3.5 w-3.5" /> : <Users className="h-3.5 w-3.5" />}{t("La collection", "The collection", "المجموعة")}</span>
+                    <h2>{p(cat.label)}</h2>
+                  </div>
+                  <Button asChild variant="outline" className="ref-btn"><Link to="/vehicules" search={{ type: cat.value }}>{t("Tout voir", "See all", "عرض الكل")} <Arrow /></Link></Button>
+                </div>
+                {list.length ? (
+                  <div className="cars-grid mt-6">{list.slice(0, 3).map((c) => <CarCard key={c.id} car={c} />)}</div>
+                ) : (
+                  <p className="mt-6">{t("Bientôt disponible.", "Coming soon.", "قريباً.")}</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 

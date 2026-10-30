@@ -6,6 +6,7 @@ import { CheckCircle2, ImagePlus, User, Car, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { PARTNER_SERVICES } from "@/lib/platform";
+import { ColorPalette, NumberInput } from "@/components/form-inputs";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/devenir-partenaire")({
@@ -36,8 +37,8 @@ function makeSchema(t: T) {
     brand: z.string().trim().min(1, t("Marque requise", "Brand required", "العلامة مطلوبة")).max(60),
     model: z.string().trim().min(1, t("Modèle requis", "Model required", "الطراز مطلوب")).max(60),
     year: z.coerce.number().int().min(1920, t("Année invalide", "Invalid year", "سنة غير صالحة")).max(new Date().getFullYear() + 1, t("Année invalide", "Invalid year", "سنة غير صالحة")),
-    color: z.string().trim().min(1, t("Couleur requise", "Colour required", "اللون مطلوب")).max(40),
-    seats: z.coerce.number().int().min(1).max(60),
+    color: z.string().trim().min(1, t("Choisissez une couleur", "Pick a colour", "اختر لوناً")).max(40),
+    seats: z.coerce.number().int().min(1, t("Nombre de places requis", "Number of seats required", "عدد المقاعد مطلوب")).max(60, t("60 places maximum", "60 seats maximum", "60 مقعداً كحد أقصى")),
     vehicle_condition: z.string().min(1, t("État requis", "Condition required", "الحالة مطلوبة")),
     availability: z.string().trim().min(2, t("Disponibilités requises", "Availability required", "التوفر مطلوب")).max(300),
     desired_rate: z.coerce.number().min(0).max(100000).default(0),
@@ -166,16 +167,16 @@ function PartnerApply() {
             <div className="ref-form">
               <label className="form-field"><span>{t("Marque", "Brand", "العلامة")}</span><input name="brand" />{err("brand")}</label>
               <label className="form-field"><span>{t("Modèle", "Model", "الطراز")}</span><input name="model" />{err("model")}</label>
-              <label className="form-field"><span>{t("Année", "Year", "السنة")}</span><input name="year" type="number" />{err("year")}</label>
-              <label className="form-field"><span>{t("Couleur", "Colour", "اللون")}</span><input name="color" />{err("color")}</label>
-              <label className="form-field"><span>{t("Nombre de places", "Seats", "عدد المقاعد")}</span><input name="seats" type="number" min={1} defaultValue={4} />{err("seats")}</label>
+              <label className="form-field"><span>{t("Année", "Year", "السنة")}</span><NumberInput name="year" maxLength={4} placeholder={t("Ex. 2020", "E.g. 2020", "مثال: 2020")} />{err("year")}</label>
+              <label className="form-field"><span>{t("Nombre de places", "Seats", "عدد المقاعد")}</span><NumberInput name="seats" maxLength={2} placeholder={t("Ex. 4", "E.g. 4", "مثال: 4")} />{err("seats")}</label>
+              <div className="form-field form-wide"><span>{t("Couleur", "Colour", "اللون")}</span><ColorPalette name="color" />{err("color")}</div>
               <label className="form-field"><span>{t("État du véhicule", "Condition", "حالة السيارة")}</span>
                 <select name="vehicle_condition" defaultValue="">
                   <option value="">{t("Choisir…", "Choose…", "اختر…")}</option>
                   {conditions.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>{err("vehicle_condition")}
               </label>
-              <label className="form-field"><span>{t("Tarif indicatif (DT, facultatif)", "Indicative price (DT, optional)", "السعر التقريبي (د.ت، اختياري)")}</span><input name="desired_rate" type="number" min={0} defaultValue={0} /></label>
+              <label className="form-field"><span>{t("Tarif indicatif (DT, facultatif)", "Indicative price (DT, optional)", "السعر التقريبي (د.ت، اختياري)")}</span><NumberInput name="desired_rate" maxLength={6} placeholder={t("0 DT", "0 DT", "0 د.ت")} /></label>
               <div className="form-field form-wide"><span>{t("Services proposés", "Services offered", "الخدمات المقترحة")}</span>
                 <div className="flex flex-wrap gap-3">
                   {PARTNER_SERVICES.map((s) => (

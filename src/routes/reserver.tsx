@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/use-auth";
 import { fetchCars } from "@/lib/cars";
 import { SERVICE_TYPES, VEHICLE_TYPES } from "@/lib/platform";
 import { useI18n } from "@/lib/i18n";
+import { NumberInput } from "@/components/form-inputs";
 
 export const Route = createFileRoute("/reserver")({
   validateSearch: (s: Record<string, unknown>): { car?: string } => (typeof s["car"] === "string" ? { car: s["car"] } : {}),
@@ -159,7 +160,7 @@ function Booking() {
                       </select>
                     </label>
                   )}
-                  <label className="form-field"><span>{t("Nombre de passagers", "Passengers", "عدد الركاب")}</span><input name="passengers" type="number" min={1} defaultValue={service === "wedding" ? 2 : 4} />{err("passengers")}</label>
+                  <label className="form-field"><span>{t("Nombre de passagers", "Passengers", "عدد الركاب")}</span><NumberInput name="passengers" maxLength={2} placeholder={service === "wedding" ? "2" : "4"} />{err("passengers")}</label>
                   <label className="form-field"><span>{t("Type de voiture souhaité", "Preferred car type", "نوع السيارة المفضل")}</span>
                     <select name="vehicle_type" defaultValue={selected?.category ?? ""}>
                       <option value="">{none}</option>
