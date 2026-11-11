@@ -7,4 +7,6 @@
 - [x] Mode clair / sombre (clair par défaut).
 - [x] Trois langues : français (défaut), anglais, arabe (RTL).
 - [x] Tester le parcours complet : demande client → candidature partenaire → validation admin → connexion partenaire → traitement du trajet.
+- [x] Transport mariage & famille : catalogue admin, demandes avec carte, validation admin, disponibilités propriétaires, trajets en 2 parties et suivi GPS en direct (OpenStreetMap).
+- [ ] Appliquer `drizzle/migrations/0001_transport_management.sql` sur la base Supabase (SQL Editor) puis vérifier le parcours en production.
 - [ ] Remplacer les photos de démonstration par les vraies photos quand elles seront fournies.

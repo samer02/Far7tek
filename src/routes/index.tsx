@@ -157,7 +157,8 @@ function Home() {
       <section className="section-ref">
         <div className="container-ref grid gap-16">
           {CAR_CATEGORIES.map((cat) => {
-            const list = (cars ?? []).filter((c) => carInCategory(c.services, cat.value));
+            const list = (cars ?? []).filter((c) => carInCategory(c.services, cat.value))
+              .sort((a, b) => Number(b.featured) - Number(a.featured) || Number(b.is_new_arrival) - Number(a.is_new_arrival));
             return (
               <div key={cat.value}>
                 <div className="registry-toolbar">

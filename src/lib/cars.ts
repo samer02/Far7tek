@@ -7,6 +7,8 @@ export type CarView = {
   id: string; name: string; slug: string; brand: string; model: string; year: number | null; color: string | null;
   category: string; short_description: string; description: string; price_from: number | null; availability: string;
   seats: number | null; city: string | null; services: string[]; images: string[];
+  transmission: string | null; fuel_type: string | null; equipment: string[] | null;
+  featured: boolean; is_new_arrival: boolean | null; created_at: string;
 };
 
 /** Resolve public URL for an image stored in either `car-images` or `proposal-images` bucket. */

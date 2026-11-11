@@ -88,9 +88,12 @@ export const vehicleTypeLabel = (v: string, lang: Lang = "fr") =>
 export const BOOKING_STATUS: Record<string, Tri> = {
   new: ["Nouvelle", "New", "جديد"],
   pending: ["En attente", "Pending", "قيد الانتظار"],
+  under_review: ["En cours d’étude", "Under review", "قيد الدراسة"],
   contacted: ["Contacté", "Contacted", "تم التواصل"],
+  approved: ["Approuvée", "Approved", "موافق عليه"],
+  awaiting_owner: ["Attente confirmation propriétaire", "Awaiting owner confirmation", "بانتظار تأكيد المالك"],
   accepted: ["Acceptée", "Accepted", "مقبول"],
-  rejected: ["Refusée", "Declined", "مرفوض"],
+  rejected: ["Refusée", "Rejected", "مرفوض"],
   confirmed: ["Confirmée", "Confirmed", "مؤكد"],
   in_progress: ["En cours", "In progress", "جارٍ"],
   completed: ["Terminée", "Completed", "منتهٍ"],
@@ -100,7 +103,65 @@ export const BOOKING_STATUS: Record<string, Tri> = {
 export const HISTORY_STATUS: Record<string, Tri> = {
   ...BOOKING_STATUS,
   assigned: ["Attribuée à un chauffeur", "Assigned to a driver", "أُسند إلى سائق"],
+  partner_rejected: ["Refusée par le partenaire", "Declined by partner", "رفضه الشريك"],
+  owner_assigned: ["Véhicule / propriétaire attribué", "Car / owner assigned", "تم تعيين السيارة / المالك"],
+  owner_declined: ["Refusée par le propriétaire", "Declined by the owner", "رفضها المالك"],
+  owner_contacted: ["Propriétaire contacté par téléphone", "Owner contacted by phone", "تم الاتصال بالمالك هاتفياً"],
+  client_contacted: ["Client contacté", "Client contacted", "تم التواصل مع العميل"],
+  schedule_updated: ["Créneau modifié", "Time slot updated", "تم تعديل الموعد"],
 };
+
+/** Journey stage statuses (journey_stages.status). */
+export const STAGE_STATUS: Record<string, Tri> = {
+  pending: ["À venir", "Not started", "لم تبدأ"],
+  in_progress: ["En cours", "In progress", "جارية"],
+  completed: ["Terminée", "Completed", "منتهية"],
+  skipped: ["Non effectuée", "Skipped", "لم تُنفّذ"],
+  cancelled: ["Annulée", "Cancelled", "ملغاة"],
+};
+
+export type Tone = "neutral" | "info" | "warning" | "success" | "danger" | "live";
+export const statusTone = (s: string): Tone =>
+  s === "in_progress" ? "live"
+  : ["approved", "confirmed", "accepted", "completed"].includes(s) ? "success"
+  : ["awaiting_owner", "under_review", "contacted"].includes(s) ? "info"
+  : ["rejected", "cancelled"].includes(s) ? "danger"
+  : s === "pending" || s === "new" ? "warning"
+  : "neutral";
+
+export const TRANSMISSIONS: { value: string; label: Tri }[] = [
+  { value: "automatic", label: ["Automatique", "Automatic", "أوتوماتيك"] },
+  { value: "manual", label: ["Manuelle", "Manual", "يدوي"] },
+];
+export const FUEL_TYPES: { value: string; label: Tri }[] = [
+  { value: "petrol", label: ["Essence", "Petrol", "بنزين"] },
+  { value: "diesel", label: ["Diesel", "Diesel", "ديزل"] },
+  { value: "hybrid", label: ["Hybride", "Hybrid", "هجين"] },
+  { value: "electric", label: ["Électrique", "Electric", "كهربائي"] },
+  { value: "lpg", label: ["GPL", "LPG", "غاز"] },
+];
+export const EQUIPMENT: { value: string; label: Tri }[] = [
+  { value: "air_conditioning", label: ["Climatisation", "Air conditioning", "مكيّف"] },
+  { value: "leather_seats", label: ["Sièges cuir", "Leather seats", "مقاعد جلدية"] },
+  { value: "flower_decoration", label: ["Décoration florale", "Flower decoration", "تزيين بالورود"] },
+  { value: "ribbons", label: ["Rubans & nœuds", "Ribbons & bows", "أشرطة وفيونكات"] },
+  { value: "sunroof", label: ["Toit ouvrant", "Sunroof", "سقف مفتوح"] },
+  { value: "convertible_roof", label: ["Toit décapotable", "Convertible roof", "سقف قابل للطي"] },
+  { value: "uniformed_driver", label: ["Chauffeur en tenue", "Uniformed chauffeur", "سائق بزي رسمي"] },
+  { value: "child_seats", label: ["Sièges enfants", "Child seats", "مقاعد أطفال"] },
+  { value: "large_trunk", label: ["Grand coffre", "Large trunk", "صندوق واسع"] },
+  { value: "usb_charging", label: ["Prises USB", "USB charging", "شحن USB"] },
+  { value: "bluetooth_audio", label: ["Audio Bluetooth", "Bluetooth audio", "صوت بلوتوث"] },
+  { value: "wifi", label: ["Wi-Fi", "Wi-Fi", "واي فاي"] },
+  { value: "water", label: ["Eau offerte", "Complimentary water", "مياه مجانية"] },
+];
+const labelMap = (list: { value: string; label: Tri }[]) => Object.fromEntries(list.map((x) => [x.value, x.label]));
+export const transmissionLabel = (v: string, lang: Lang = "fr") => labelOf(labelMap(TRANSMISSIONS), v, lang);
+export const fuelLabel = (v: string, lang: Lang = "fr") => labelOf(labelMap(FUEL_TYPES), v, lang);
+export const equipmentLabel = (v: string, lang: Lang = "fr") => labelOf(labelMap(EQUIPMENT), v, lang);
+/** The category a request belongs to, from a car's services (wedding wins when both apply). */
+export const primaryCategory = (services: string[] | null | undefined): CarCategory | null =>
+  carInCategory(services, "wedding") ? "wedding" : carInCategory(services, "family") ? "family" : null;
 export const PROPOSAL_STATUS: Record<string, Tri> = {
   new: ["Nouveau", "New", "جديد"],
   pending: ["En attente", "Pending", "قيد الانتظار"],

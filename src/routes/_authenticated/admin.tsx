@@ -1,32 +1,35 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { signedUrls } from "@/lib/cars";
-import { fmtPrice, BOOKING_STATUS, PROPOSAL_STATUS, ASSIGNMENT_STATUS, CAR_VALIDATION, SERVICE_TYPES, matchScore, partnerServiceLabel, serviceLabel, vehicleTypeLabel } from "@/lib/platform";
-import { approvePartner, assignTrip, listClients, reviewChangeRequest, reviewPartner, setBookingStatus, setCarValidation } from "@/lib/admin.functions";
+import { fmtPrice, BOOKING_STATUS, PROPOSAL_STATUS, CAR_VALIDATION, SERVICE_TYPES, CAR_CATEGORIES, partnerServiceLabel, vehicleTypeLabel } from "@/lib/platform";
+import { approvePartner, listClients, reviewChangeRequest, reviewPartner, setCarValidation } from "@/lib/admin.functions";
 import { StatusPill } from "@/components/site-chrome";
 import { NotificationsPanel } from "@/components/notifications-panel";
-import { labelOf, useI18n, type Tri } from "@/lib/i18n";
+import { TransportRequests } from "@/components/admin/transport-requests";
+import { LiveOperations } from "@/components/admin/live-operations";
+import { CarCatalog } from "@/components/admin/car-catalog";
+import { labelOf, pick, useI18n, type Tri } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Administration — Far7tek" }, { name: "robots", content: "noindex" }] }),
   component: Admin,
 });
 
-type Section = "overview" | "requests" | "partners" | "vehicles" | "assign" | "clients" | "trips" | "notifications" | "settings";
+type Section = "overview" | "requests" | "live" | "catalog" | "partners" | "vehicles" | "clients" | "notifications" | "settings";
 const SECTIONS: [Section, Tri][] = [
   ["overview", ["Vue générale", "Overview", "نظرة عامة"]],
-  ["requests", ["Demandes clients", "Client requests", "طلبات العملاء"]],
+  ["requests", ["Demandes de transport", "Transport requests", "طلبات النقل"]],
+  ["live", ["Opérations en direct", "Live operations", "العمليات المباشرة"]],
+  ["catalog", ["Catalogue", "Catalog", "الكتالوج"]],
   ["partners", ["Partenaires", "Partners", "الشركاء"]],
-  ["vehicles", ["Véhicules", "Vehicles", "السيارات"]],
-  ["assign", ["Attribution", "Assignment", "الإسناد"]],
+  ["vehicles", ["Validation véhicules", "Vehicle approvals", "اعتماد السيارات"]],
   ["clients", ["Clients", "Clients", "العملاء"]],
-  ["trips", ["Trajets", "Trips", "الرحلات"]],
   ["notifications", ["Notifications", "Notifications", "الإشعارات"]],
   ["settings", ["Paramètres", "Settings", "الإعدادات"]],
 ];
@@ -48,6 +51,7 @@ function Admin() {
   const { t, p } = useI18n();
   const { data: auth, isLoading } = useAuth();
   const [section, setSection] = useState<Section>("overview");
+  const [openRequest, setOpenRequest] = useState<string | null>(null);
   const qc = useQueryClient();
   const d = useAdminData();
   const refresh = () => qc.invalidateQueries({ predicate: (q) => String(q.queryKey[0]).startsWith("adm-") });
@@ -65,15 +69,15 @@ function Admin() {
       <div className="container-ref">
         <div className="admin-header"><div><span className="eyebrow">{t("Administration", "Admin", "الإدارة")}</span><h1>{p(current[1])}</h1></div></div>
         <div className="registry-tabs mb-6">
-          {SECTIONS.map(([k, l]) => <Button key={k} variant={k === section ? "default" : "ghost"} className="ref-btn" onClick={() => setSection(k)}>{p(l)}</Button>)}
+          {SECTIONS.map(([k, l]) => <Button key={k} variant={k === section ? "default" : "ghost"} className="ref-btn" onClick={() => { setOpenRequest(null); setSection(k); }}>{p(l)}</Button>)}
         </div>
-        {section === "overview" && <Overview {...ctx} />}
-        {section === "requests" && <Requests {...ctx} />}
+        {section === "overview" && <Overview {...ctx} onOpen={(id) => { setOpenRequest(id); setSection("requests"); }} />}
+        {section === "requests" && <TransportRequests key={openRequest ?? "list"} bookings={d.bookings} cars={d.cars} refresh={refresh} initialOpen={openRequest} />}
+        {section === "live" && <LiveOperations bookings={d.bookings} onOpen={(id) => { setOpenRequest(id); setSection("requests"); }} />}
+        {section === "catalog" && <CarCatalog cars={d.cars} bookings={d.bookings} refresh={refresh} />}
         {section === "partners" && <Partners {...ctx} />}
         {section === "vehicles" && <Vehicles {...ctx} />}
-        {section === "assign" && <Assign {...ctx} />}
         {section === "clients" && <Clients />}
-        {section === "trips" && <Trips {...ctx} />}
         {section === "notifications" && <NotificationsPanel admin />}
         {section === "settings" && <Settings />}
       </div>
@@ -83,23 +87,27 @@ function Admin() {
 
 type Ctx = ReturnType<typeof useAdminData> & { partners: ReturnType<typeof useAdminData>["proposals"]; refresh: () => void };
 
-function Overview({ bookings, proposals, cars, assignments }: Ctx) {
+function Overview({ bookings, proposals, cars, onOpen }: Ctx & { onOpen: (id: string) => void }) {
   const { t, lang, date } = useI18n();
   const k = [
-    [t("Demandes clients", "Client requests", "طلبات العملاء"), bookings.length],
-    [t("Demandes en attente", "Pending requests", "طلبات قيد الانتظار"), bookings.filter((b) => b.status === "pending" || b.status === "new").length],
+    [t("Demandes en attente", "Pending requests", "طلبات قيد الانتظار"), bookings.filter((b) => ["pending", "new", "under_review"].includes(b.status)).length],
+    [t("À confirmer par le propriétaire", "Awaiting owner", "بانتظار تأكيد المالك"), bookings.filter((b) => ["approved", "awaiting_owner"].includes(b.status)).length],
+    [t("Réservations confirmées", "Confirmed bookings", "حجوزات مؤكدة"), bookings.filter((b) => b.status === "confirmed").length],
+    [t("Opérations en cours", "Active operations", "عمليات جارية"), bookings.filter((b) => b.status === "in_progress").length],
     [t("Dossiers partenaires à traiter", "Partner applications to review", "ملفات شركاء للمعالجة"), proposals.filter((x) => ["pending", "new", "reviewing", "info_requested"].includes(x.status)).length],
-    [t("Partenaires actifs", "Active partners", "الشركاء النشطون"), proposals.filter((x) => x.status === "approved").length],
-    [t("Véhicules à valider", "Vehicles to approve", "سيارات للموافقة"), cars.filter((c) => c.validation_status === "pending").length],
-    [t("Trajets confirmés", "Confirmed trips", "الرحلات المؤكدة"), bookings.filter((b) => ["accepted", "confirmed", "in_progress"].includes(b.status)).length],
+    [t("Véhicules publiés", "Published vehicles", "سيارات منشورة"), cars.filter((c) => c.active).length],
   ] as const;
+  const cat = (v: string | null) => { const c = CAR_CATEGORIES.find((x) => x.value === v); return c ? pick(c.short, lang) : "—"; };
   return (
     <>
       <div className="kpi-grid">{k.map(([l, v]) => <div key={l} className="kpi"><div className="kpi-label">{l}</div><div className="kpi-value">{v}</div></div>)}</div>
-      <div className="registry"><h3 className="mb-3">{t("Activité récente", "Recent activity", "النشاط الأخير")}</h3>
-        {bookings.slice(0, 5).map((b) => <div key={b.id} className="note-row"><small>{date(b.created_at)}</small> {t("Demande", "Request", "طلب")} {b.reference} — {b.first_name} {b.last_name} · {serviceLabel(b.service_type, lang)} · {labelOf(BOOKING_STATUS, b.status, lang)}</div>)}
-        {assignments.slice(0, 3).map((a) => <div key={a.id} className="note-row"><small>{date(a.created_at)}</small> {t("Attribution", "Assignment", "إسناد")} {labelOf(ASSIGNMENT_STATUS, a.status, lang)}</div>)}
-        {!bookings.length && !assignments.length && <p className="admin-empty">{t("Aucune activité pour le moment.", "No activity yet.", "لا يوجد نشاط حالياً.")}</p>}
+      <div className="registry"><h3 className="mb-3">{t("Dernières demandes", "Latest requests", "أحدث الطلبات")}</h3>
+        {bookings.slice(0, 8).map((b) => (
+          <button key={b.id} type="button" className="note-row block w-full text-start" onClick={() => onOpen(b.id)}>
+            <small>{date(b.created_at)}</small> {b.reference} — {b.first_name} {b.last_name} · {cat(b.category)} · {date(b.wedding_date)} · <strong>{labelOf(BOOKING_STATUS, b.status, lang)}</strong>
+          </button>
+        ))}
+        {!bookings.length && <p className="admin-empty">{t("Aucune activité pour le moment.", "No activity yet.", "لا يوجد نشاط حالياً.")}</p>}
       </div>
     </>
   );
@@ -115,45 +123,6 @@ function Filters({ q, setQ, status, setStatus, statuses, extra }: { q: string; s
         {Object.entries(statuses).map(([k, v]) => <option key={k} value={k}>{p(v)}</option>)}
       </select>
       {extra}
-    </div>
-  );
-}
-
-function Requests({ bookings, assignments, partners, refresh }: Ctx) {
-  const { t, p, lang, date } = useI18n();
-  const setStatus = useServerFn(setBookingStatus);
-  const [q, setQ] = useState(""); const [st, setSt] = useState(""); const [svc, setSvc] = useState(""); const [partner, setPartner] = useState("");
-  const [sort, setSort] = useState<"created" | "date">("created");
-  const partnerOf = (id: string) => assignments.find((a) => a.booking_request_id === id && a.status !== "rejected")?.partner_id;
-  const name = (uid?: string) => { const x = partners.find((y) => y.partner_user_id === uid); return x ? `${x.first_name} ${x.last_name}` : "—"; };
-  const rows = bookings
-    .filter((b) => (!st || b.status === st) && (!svc || b.service_type === svc) && (!partner || partnerOf(b.id) === partner))
-    .filter((b) => !q || `${b.reference} ${b.first_name} ${b.last_name} ${b.city} ${b.phone}`.toLowerCase().includes(q.toLowerCase()))
-    .sort((a, b) => (sort === "date" ? a.wedding_date.localeCompare(b.wedding_date) : b.created_at.localeCompare(a.created_at)));
-  return (
-    <div className="registry">
-      <Filters q={q} setQ={setQ} status={st} setStatus={setSt} statuses={BOOKING_STATUS} extra={<>
-        <select className="admin-select" value={svc} onChange={(e) => setSvc(e.target.value)}><option value="">{t("Tous services", "All services", "كل الخدمات")}</option>{SERVICE_TYPES.map((s) => <option key={s.value} value={s.value}>{p(s.label)}</option>)}</select>
-        <select className="admin-select" value={partner} onChange={(e) => setPartner(e.target.value)}><option value="">{t("Tous partenaires", "All partners", "كل الشركاء")}</option>{partners.map((x) => <option key={x.id} value={x.partner_user_id!}>{x.first_name} {x.last_name}</option>)}</select>
-        <select className="admin-select" value={sort} onChange={(e) => setSort(e.target.value as "created" | "date")}><option value="created">{t("Plus récentes", "Most recent", "الأحدث")}</option><option value="date">{t("Date du service", "Service date", "تاريخ الخدمة")}</option></select>
-      </>} />
-      <div className="table-scroll"><table className="registry-table">
-        <thead><tr><th>{t("Réf.", "Ref.", "مرجع")}</th><th>{t("Client", "Client", "العميل")}</th><th>{t("Service", "Service", "الخدمة")}</th><th>{t("Date", "Date", "التاريخ")}</th><th>{t("Trajet", "Route", "المسار")}</th><th>{t("Partenaire", "Partner", "الشريك")}</th><th>{t("Statut", "Status", "الحالة")}</th></tr></thead>
-        <tbody>{rows.map((b) => (
-          <tr key={b.id}>
-            <td>{b.reference}<small>{date(b.created_at)}</small></td>
-            <td><strong>{b.first_name} {b.last_name}</strong><small><a href={`tel:${b.phone}`} dir="ltr">{b.phone}</a> · {b.email}</small>
-              <small className="flex gap-2 mt-1"><a className="text-primary" href={`tel:${b.phone}`}>{t("Appeler", "Call", "اتصال")}</a><a className="text-primary" href={`https://wa.me/${b.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer">WhatsApp</a></small></td>
-            <td>{serviceLabel(b.service_type, lang)}<small>{b.passengers} {t("pass.", "pax", "راكب")} · {b.vehicle_type ? vehicleTypeLabel(b.vehicle_type, lang) : t("Sans préférence", "No preference", "بدون تفضيل")}</small></td>
-            <td>{date(b.wedding_date)}<small>{b.wedding_time.slice(0, 5)}{b.return_time ? ` / ${b.return_time.slice(0, 5)}` : ""}</small></td>
-            <td>{b.pickup_address}<small>→ {b.venue} ({b.city}) · {b.trip_type === "round_trip" ? t("A/R", "Return", "ذهاب وإياب") : t("Aller", "One way", "ذهاب")}</small>{b.message && <small>{b.message}</small>}</td>
-            <td>{name(partnerOf(b.id))}</td>
-            <td><select className="admin-select" value={b.status} onChange={(e) => { const val = e.target.value as "pending"; run(async () => { try { await setStatus({ data: { id: b.id, status: val, note: "" } }); } catch { const { error } = await supabase.rpc("admin_set_booking_status", { _id: b.id, _status: val, _note: "" }); if (error) throw error; } }, t("Statut mis à jour", "Status updated", "تم تحديث الحالة"), refresh); }}>
-              {Object.entries(BOOKING_STATUS).filter(([k]) => k !== "new").map(([k, v]) => <option key={k} value={k}>{p(v)}</option>)}
-            </select></td>
-          </tr>
-        ))}</tbody>
-      </table>{!rows.length && <p className="admin-empty">{t("Aucune demande.", "No requests.", "لا توجد طلبات.")}</p>}</div>
     </div>
   );
 }
@@ -285,59 +254,6 @@ function Vehicles({ cars, changes, refresh }: Ctx) {
   );
 }
 
-function Assign({ bookings, assignments, partners, cars, refresh }: Ctx) {
-  const { t, lang, date } = useI18n();
-  const assign = useServerFn(assignTrip);
-  const open = bookings.filter((b) => ["pending", "new", "contacted"].includes(b.status) && !assignments.some((a) => a.booking_request_id === b.id && a.status !== "rejected"));
-  return (
-    <div className="registry">
-      {!open.length && <p className="admin-empty">{t("Aucune demande à attribuer.", "No requests to assign.", "لا توجد طلبات للإسناد.")}</p>}
-      {open.map((b) => {
-        const options = partners
-          .map((x) => { const car = cars.find((c) => c.id === x.car_id); return { x, car, score: car ? matchScore(b, car) : 0 }; })
-          .filter((o) => o.score >= 0)
-          .sort((m, n) => n.score - m.score);
-        return (
-          <div key={b.id} className="note-row">
-            <strong>{b.reference} — {serviceLabel(b.service_type, lang)}</strong>
-            <p>{date(b.wedding_date)} {b.wedding_time.slice(0, 5)} · {b.city} · {b.passengers} {t("pass.", "pax", "راكب")} · {b.vehicle_type ? vehicleTypeLabel(b.vehicle_type, lang) : t("Sans préférence", "No preference", "بدون تفضيل")}</p>
-            {assignments.filter((a) => a.booking_request_id === b.id && a.status === "rejected").map((a) => <small key={a.id} className="block">{t("Refusée précédemment", "Previously declined", "رُفض سابقاً")} : {a.rejection_reason}</small>)}
-            <div className="action-row mt-2">
-              {!options.length && <small>{t("Aucun partenaire compatible (places).", "No compatible partner (seats).", "لا يوجد شريك مناسب (المقاعد).")}</small>}
-              {options.slice(0, 5).map(({ x, car, score }) => (
-                <Button key={x.id} variant={score >= 3 ? "default" : "outline"} className="ref-btn"
-                  onClick={() => run(async () => { try { await assign({ data: { bookingId: b.id, partnerId: x.partner_user_id!, carId: car?.id ?? null } }); } catch { if (!car?.id) throw new Error("Véhicule introuvable"); const { error } = await supabase.rpc("admin_assign_trip", { _booking: b.id, _partner: x.partner_user_id!, _car: car.id }); if (error) throw error; } }, t("Demande attribuée", "Request assigned", "تم إسناد الطلب"), refresh)}>
-                  {x.first_name} {x.last_name} · {car?.name ?? "—"} ({car?.city}) {score >= 3 ? `★ ${t("suggéré", "suggested", "مقترح")}` : ""}
-                </Button>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function Trips({ bookings, assignments }: Ctx) {
-  const { t, date } = useI18n();
-  const today = new Date().toISOString().slice(0, 10);
-  const groups = useMemo(() => [
-    [t("À venir", "Upcoming", "القادمة"), bookings.filter((b) => ["accepted", "confirmed"].includes(b.status) && b.wedding_date >= today)],
-    [t("En cours", "In progress", "الجارية"), bookings.filter((b) => b.status === "in_progress")],
-    [t("Terminés", "Completed", "المنتهية"), bookings.filter((b) => b.status === "completed")],
-    [t("Annulés", "Cancelled", "الملغاة"), bookings.filter((b) => b.status === "cancelled" || b.status === "rejected")],
-  ] as const, [bookings, today, t]);
-  return (
-    <div className="admin-edit-grid">
-      {groups.map(([g, rows]) => (
-        <div key={g} className="registry"><h3 className="mb-3">{g} ({rows.length})</h3>
-          {rows.map((b) => <div key={b.id} className="note-row"><strong>{b.reference}</strong> {date(b.wedding_date)} · {b.pickup_address} → {b.venue}<small className="block">{assignments.some((a) => a.booking_request_id === b.id && a.status === "accepted") ? t("Partenaire assigné", "Partner assigned", "تم تعيين شريك") : t("Sans partenaire", "No partner", "بدون شريك")}</small></div>)}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function Clients() {
   const { t, date } = useI18n();
   const fetchClients = useServerFn(listClients);
@@ -365,9 +281,9 @@ function Settings() {
       <h3 className="mb-3">{t("Services et règles", "Services and rules", "الخدمات والقواعد")}</h3>
       {SERVICE_TYPES.map((s) => <div key={s.value} className="note-row">{p(s.label)}</div>)}
       <p className="mt-4">{t(
-        "Attribution : manuelle, avec suggestion des partenaires selon la ville, le nombre de places, le type de véhicule et les services proposés. Un partenaire doit accepter la demande avant de voir le téléphone du client.",
-        "Assignment: manual, with partner suggestions based on city, seats, vehicle type and services. A partner must accept the request before seeing the client's phone number.",
-        "الإسناد: يدوي، مع اقتراح الشركاء حسب المدينة وعدد المقاعد ونوع السيارة والخدمات. يجب على الشريك قبول الطلب قبل رؤية هاتف العميل.",
+        "Validation : chaque demande est étudiée puis approuvée par l’administration, qui vérifie la disponibilité du véhicule. Le téléphone du propriétaire n’est jamais visible du client ; celui du client n’est transmis au propriétaire qu’après confirmation. Le suivi GPS ne démarre que lorsque le propriétaire lance une étape et s’arrête à la fin.",
+        "Approval: every request is reviewed and approved by the admin team, which checks vehicle availability. The owner's phone is never shown to clients; the client's phone is only shared with the owner once confirmed. GPS tracking starts only when the owner starts a stage and stops when it ends.",
+        "الموافقة: تتم مراجعة كل طلب والموافقة عليه من الإدارة بعد التحقق من توفر السيارة. لا يظهر هاتف المالك للعميل أبداً، ولا يُرسل هاتف العميل إلى المالك إلا بعد التأكيد. يبدأ تتبع GPS فقط عندما يبدأ المالك مرحلة ويتوقف عند نهايتها.",
       )}</p>
       <p className="mt-2">{t(
         "Notifications : internes au site. Les envois par e-mail ou SMS ne sont pas encore configurés (seule l’invitation partenaire part par e-mail).",

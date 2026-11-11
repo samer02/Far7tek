@@ -82,6 +82,20 @@ export type Database = {
           venue: string
           wedding_date: string
           wedding_time: string
+          assigned_admin_id: string | null
+          category: string | null
+          client_notes: string
+          contact_extra: string
+          decided_at: string | null
+          decision_note: string | null
+          destination_lat: number | null
+          destination_lng: number | null
+          owner_id: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          service_end_at: string | null
+          service_start_at: string | null
+          stops: Json
         }
         Insert: {
           car_id?: string | null
@@ -108,6 +122,20 @@ export type Database = {
           venue: string
           wedding_date: string
           wedding_time: string
+          assigned_admin_id?: string | null
+          category?: string | null
+          client_notes?: string
+          contact_extra?: string
+          decided_at?: string | null
+          decision_note?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          owner_id?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          service_end_at?: string | null
+          service_start_at?: string | null
+          stops?: Json
         }
         Update: {
           car_id?: string | null
@@ -134,6 +162,20 @@ export type Database = {
           venue?: string
           wedding_date?: string
           wedding_time?: string
+          assigned_admin_id?: string | null
+          category?: string | null
+          client_notes?: string
+          contact_extra?: string
+          decided_at?: string | null
+          decision_note?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          owner_id?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          service_end_at?: string | null
+          service_start_at?: string | null
+          stops?: Json
         }
         Relationships: [
           {
@@ -351,6 +393,11 @@ export type Database = {
           updated_at: string
           validation_status: string
           year: number | null
+          availability_mode: string
+          equipment: string[]
+          fuel_type: string | null
+          is_new_arrival: boolean
+          transmission: string | null
         }
         Insert: {
           active?: boolean
@@ -377,6 +424,11 @@ export type Database = {
           updated_at?: string
           validation_status?: string
           year?: number | null
+          availability_mode?: string
+          equipment?: string[]
+          fuel_type?: string | null
+          is_new_arrival?: boolean
+          transmission?: string | null
         }
         Update: {
           active?: boolean
@@ -403,7 +455,184 @@ export type Database = {
           updated_at?: string
           validation_status?: string
           year?: number | null
+          availability_mode?: string
+          equipment?: string[]
+          fuel_type?: string | null
+          is_new_arrival?: boolean
+          transmission?: string | null
         }
+        Relationships: []
+      }
+      car_availability_rules: {
+        Row: {
+          available: boolean
+          car_id: string
+          created_at: string
+          created_by: string | null
+          date_from: string | null
+          date_to: string | null
+          end_time: string | null
+          id: string
+          kind: string
+          note: string
+          start_time: string | null
+          weekday: number | null
+        }
+        Insert: {
+          available: boolean
+          car_id: string
+          created_at?: string
+          created_by?: string | null
+          date_from?: string | null
+          date_to?: string | null
+          end_time?: string | null
+          id?: string
+          kind: string
+          note?: string
+          start_time?: string | null
+          weekday?: number | null
+        }
+        Update: {
+          available?: boolean
+          car_id?: string
+          created_at?: string
+          created_by?: string | null
+          date_from?: string | null
+          date_to?: string | null
+          end_time?: string | null
+          id?: string
+          kind?: string
+          note?: string
+          start_time?: string | null
+          weekday?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_availability_rules_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journey_stages: {
+        Row: {
+          booking_request_id: string
+          created_at: string
+          end_accuracy: number | null
+          end_lat: number | null
+          end_lng: number | null
+          ended_at: string | null
+          ended_by: string | null
+          from_address: string
+          from_lat: number | null
+          from_lng: number | null
+          id: string
+          label: string
+          notes: string
+          scheduled_at: string | null
+          stage_no: number
+          start_accuracy: number | null
+          start_lat: number | null
+          start_lng: number | null
+          started_at: string | null
+          started_by: string | null
+          status: string
+          stops: Json
+          to_address: string
+          to_lat: number | null
+          to_lng: number | null
+          updated_at: string
+        }
+        Insert: never
+        Update: never
+        Relationships: [
+          {
+            foreignKeyName: "journey_stages_booking_request_id_fkey"
+            columns: ["booking_request_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journey_events: {
+        Row: {
+          accuracy: number | null
+          actor_id: string | null
+          actor_role: string
+          booking_request_id: string
+          created_at: string
+          event_type: string
+          id: string
+          lat: number | null
+          lng: number | null
+          note: string
+          stage_id: string | null
+        }
+        Insert: never
+        Update: never
+        Relationships: [
+          {
+            foreignKeyName: "journey_events_booking_request_id_fkey"
+            columns: ["booking_request_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gps_location_updates: {
+        Row: {
+          accuracy: number | null
+          booking_request_id: string
+          heading: number | null
+          id: number
+          lat: number
+          lng: number
+          owner_id: string | null
+          received_at: string
+          recorded_at: string
+          source: string
+          speed: number | null
+          stage_id: string | null
+        }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      live_locations: {
+        Row: {
+          accuracy: number | null
+          booking_request_id: string
+          heading: number | null
+          lat: number | null
+          lng: number | null
+          owner_id: string | null
+          received_at: string | null
+          recorded_at: string | null
+          speed: number | null
+          stage_id: string | null
+          tracking: boolean
+          updated_at: string
+        }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          entity: string
+          entity_id: string | null
+          id: number
+        }
+        Insert: never
+        Update: never
         Relationships: []
       }
       gallery: {
@@ -746,6 +975,76 @@ export type Database = {
         Args: { _booking: string; _status: string }
         Returns: undefined
       }
+      admin_list_owners: {
+        Args: never
+        Returns: { email: string; first_name: string; id: string; last_name: string; phone: string | null }[]
+      }
+      admin_transport_assign: {
+        Args: { _car: string; _id: string; _owner?: string | null }
+        Returns: undefined
+      }
+      admin_transport_log_contact: {
+        Args: { _id: string; _target: string }
+        Returns: undefined
+      }
+      admin_transport_set_status: {
+        Args: { _id: string; _note?: string; _override?: boolean; _status: string }
+        Returns: Json
+      }
+      admin_transport_set_window: {
+        Args: { _end: string; _id: string; _start: string }
+        Returns: undefined
+      }
+      car_calendar_bookings: {
+        Args: { _car: string; _from: string; _to: string }
+        Returns: Json
+      }
+      car_window_status: {
+        Args: { _car: string; _end: string; _ignore?: string | null; _start: string }
+        Returns: string
+      }
+      journey_client_signal: {
+        Args: { _kind: string; _stage: string }
+        Returns: Json
+      }
+      journey_end_stage: {
+        Args: { _accuracy?: number | null; _lat?: number | null; _lng?: number | null; _stage: string }
+        Returns: Json
+      }
+      journey_mark_stop: {
+        Args: { _index: number; _lat?: number | null; _lng?: number | null; _stage: string }
+        Returns: Json
+      }
+      journey_push_location: {
+        Args: {
+          _accuracy?: number | null
+          _booking: string
+          _heading?: number | null
+          _lat: number
+          _lng: number
+          _recorded_at?: string | null
+          _speed?: number | null
+        }
+        Returns: Json
+      }
+      journey_start_stage: {
+        Args: { _accuracy?: number | null; _lat?: number | null; _lng?: number | null; _stage: string }
+        Returns: Json
+      }
+      owner_respond_booking: {
+        Args: { _accept: boolean; _id: string; _reason?: string }
+        Returns: undefined
+      }
+      owner_set_availability_mode: {
+        Args: { _car: string; _mode: string }
+        Returns: undefined
+      }
+      owner_transport_operations: { Args: never; Returns: Json }
+      transport_client_cancel: {
+        Args: { _id: string; _reason: string }
+        Returns: undefined
+      }
+      transport_submit_request: { Args: { _data: Json }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "editor" | "partner"
@@ -759,6 +1058,9 @@ export type Database = {
         | "rejected"
         | "in_progress"
         | "completed"
+        | "under_review"
+        | "approved"
+        | "awaiting_owner"
       proposal_status:
         | "new"
         | "reviewing"
@@ -905,6 +1207,9 @@ export const Constants = {
         "rejected",
         "in_progress",
         "completed",
+        "under_review",
+        "approved",
+        "awaiting_owner",
       ],
       proposal_status: [
         "new",

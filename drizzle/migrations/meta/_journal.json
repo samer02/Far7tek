@@ -8,6 +8,13 @@
       "when": 1793313613743,
       "tag": "0000_admin_partner_actions_as_db_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794384000000,
+      "tag": "0001_transport_management",
+      "breakpoints": true
     }
   ]
 }
