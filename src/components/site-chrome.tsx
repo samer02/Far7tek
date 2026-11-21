@@ -50,13 +50,17 @@ export function SiteHeader() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const roles = auth?.roles ?? [];
+  const isPartner = roles.includes("partner");
+  const isAdmin = roles.includes("admin");
   const close = () => setOpen(false);
 
   const links = [
     { to: "/" as const, label: t("Accueil", "Home", "الرئيسية") },
     { to: "/vehicules" as const, label: t("Véhicules", "Vehicles", "السيارات") },
     { to: "/reserver" as const, label: t("Réserver", "Book", "احجز") },
-    { to: "/devenir-partenaire" as const, label: t("Devenir partenaire", "Become a partner", "كن شريكاً") },
+    ...(isPartner ? [{ to: "/partenaire" as const, label: t("Espace partenaire", "Partner area", "فضاء الشريك") }] : []),
+    ...(isAdmin ? [{ to: "/admin" as const, label: t("Administration", "Admin", "الإدارة") }] : []),
+    ...(!isPartner && !isAdmin ? [{ to: "/devenir-partenaire" as const, label: t("Devenir partenaire", "Become a partner", "كن شريكاً") }] : []),
     { to: "/compte" as const, label: t("Mes demandes", "My requests", "طلباتي") },
   ];
 
@@ -68,12 +72,6 @@ export function SiteHeader() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const spaceLinks = (
-    <>
-      {roles.includes("admin") && <Link to="/admin" onClick={close} activeProps={{ "data-active": "true" } as never}>{t("Administration", "Admin", "الإدارة")}</Link>}
-      {roles.includes("partner") && <Link to="/partenaire" onClick={close} activeProps={{ "data-active": "true" } as never}>{t("Espace partenaire", "Partner area", "فضاء الشريك")}</Link>}
-    </>
-  );
 
   return (
     <header className="site-header">
@@ -120,7 +118,6 @@ export function SiteHeader() {
           {links.map((l) => (
             <Link key={l.to} to={l.to} onClick={close}>{l.label}</Link>
           ))}
-          {spaceLinks}
           {auth?.userId ? (
             <button className="link" onClick={signOut}>{t("Déconnexion", "Sign out", "خروج")}</button>
           ) : (

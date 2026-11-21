@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ImagePlus, Plus, Sparkles, Star, Trash2 } from "lucide-react";
+import { Eye, ExternalLink, ImagePlus, MessageCircle, Phone, Plus, Sparkles, Star, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
 import { resolveCarImageUrl } from "@/lib/cars";
-import { CAR_CATEGORIES, carInCategory, EQUIPMENT, FUEL_TYPES, TRANSMISSIONS, VEHICLE_TYPES, fallbackCarImage } from "@/lib/platform";
+import { CAR_CATEGORIES, carInCategory, EQUIPMENT, FUEL_TYPES, TRANSMISSIONS, VEHICLE_TYPES, fallbackCarImage, fmtPrice } from "@/lib/platform";
 import { call, HOLDING, type Booking } from "@/lib/transport";
 import { useI18n } from "@/lib/i18n";
 import { ColorPalette, NumberInput } from "@/components/form-inputs";
-import { ownerName, useOwners } from "@/components/admin/transport-requests";
+import { ownerName, useOwners, telHref, waHref } from "@/components/admin/transport-requests";
 
 type Car = Tables<"cars">;
 type CarImage = Tables<"car_images">;
@@ -24,6 +24,7 @@ export function CarCatalog({ cars, bookings, refresh }: { cars: Car[]; bookings:
   const qc = useQueryClient();
   const { data: owners = [] } = useOwners();
   const [editing, setEditing] = useState<string | "new" | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("");
   const { data: images = [] } = useQuery({
@@ -60,6 +61,7 @@ export function CarCatalog({ cars, bookings, refresh }: { cars: Car[]; bookings:
     .filter((c) => !cat || carInCategory(c.services, cat as "wedding" | "family"))
     .filter((c) => !q || `${c.name} ${c.brand} ${c.model} ${c.city ?? ""}`.toLowerCase().includes(q.toLowerCase()));
   const current = editing && editing !== "new" ? cars.find((c) => c.id === editing) : undefined;
+  const viewingCar = viewing ? cars.find((c) => c.id === viewing) : undefined;
 
   if (editing && editing !== "new" && !current) return <p className="registry">{t("Chargement…", "Loading…", "جارٍ التحميل…")}</p>;
   if (editing) return <CarEditor key={editing} car={current} cars={cars} owners={owners} images={images.filter((i) => i.car_id === current?.id)} onDone={(id) => { reload(); setEditing(id); }} onClose={() => setEditing(null)} onDelete={current ? () => void remove(current) : undefined} />;
@@ -81,21 +83,239 @@ export function CarCatalog({ cars, bookings, refresh }: { cars: Car[]; bookings:
             <div className="catalog-admin-body">
               <div className="car-meta"><span>{CAR_CATEGORIES.filter((x) => carInCategory(c.services, x.value)).map((x) => p(x.short)).join(" · ") || "—"}</span><span>{c.active ? t("Publié", "Published", "منشور") : t("Masqué", "Hidden", "مخفي")}</span></div>
               <h3>{c.name}</h3>
-              <small>{[c.brand, c.model, c.year].filter(Boolean).join(" · ")} · {ownerName(owners.find((o) => o.id === c.owner_id))}</small>
+              <small>{[c.brand, c.model, c.year].filter(Boolean).join(" · ")}</small>
+              <div className="publisher-badge mt-2 text-xs py-1.5 px-3 rounded-lg bg-muted text-foreground flex flex-wrap items-center justify-between gap-1">
+                <span><strong className="text-primary">{t("Propriétaire :", "Owner:", "المالك:")}</strong> {ownerName(owners.find((o) => o.id === c.owner_id))}</span>
+                {owners.find((o) => o.id === c.owner_id)?.email && (
+                  <span className="opacity-70 text-[11px] font-mono">{owners.find((o) => o.id === c.owner_id)?.email}</span>
+                )}
+              </div>
+              <div className="car-quick-specs my-2.5 grid grid-cols-2 gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-lg border border-border/40">
+                <div><strong>{t("Tarif :", "Price:", "السعر:")}</strong> <span className="text-primary font-semibold">{c.price_from ? `${c.price_from} DT` : t("Sur demande", "On request", "عند الطلب")}</span></div>
+                <div><strong>{t("Places :", "Seats:", "المقاعد:")}</strong> {c.seats ? `${c.seats} pl.` : "—"}</div>
+                <div><strong>{t("Ville :", "City:", "المدينة:")}</strong> {c.city || t("Tunisie", "Tunisia", "تونس")}</div>
+                <div><strong>{t("Boîte :", "Gearbox:", "ناقل الحركة:")}</strong> <span className="capitalize">{c.transmission || "Auto"}</span></div>
+              </div>
               <div className="toggle-row">
                 <label className="check-label"><input type="checkbox" checked={c.active} onChange={(e) => void patch(c, e.target.checked ? { active: true, validation_status: "active" } : { active: false }, e.target.checked ? t("Publié", "Published", "منشور") : t("Dépublié", "Unpublished", "أُلغي النشر"))} />{t("Publié", "Published", "منشور")}</label>
                 <label className="check-label"><input type="checkbox" checked={c.featured} onChange={(e) => void patch(c, { featured: e.target.checked }, t("Mis à jour", "Updated", "تم التحديث"))} /><Star className="h-4 w-4" />{t("Coup de cœur", "Featured", "مميزة")}</label>
                 <label className="check-label"><input type="checkbox" checked={c.is_new_arrival} onChange={(e) => void patch(c, { is_new_arrival: e.target.checked }, t("Mis à jour", "Updated", "تم التحديث"))} /><Sparkles className="h-4 w-4" />{t("Nouveauté", "New arrival", "وصل حديثاً")}</label>
               </div>
               <div className="action-row mt-3">
-                <Button variant="outline" className="ref-btn" onClick={() => setEditing(c.id)}>{t("Modifier", "Edit", "تعديل")}</Button>
-                <Button variant="ghost" className="ref-btn text-destructive" onClick={() => void remove(c)}><Trash2 className="h-4 w-4" />{t("Supprimer", "Delete", "حذف")}</Button>
+                <Button variant="default" className="ref-btn bg-primary/90 hover:bg-primary text-primary-foreground" onClick={() => setViewing(c.id)}>
+                  <Eye className="h-4 w-4" />{t("Détails", "Details", "التفاصيل")}
+                </Button>
+                <Button variant="outline" className="ref-btn" onClick={() => setEditing(c.id)}>
+                  {t("Modifier", "Edit", "تعديل")}
+                </Button>
+                <Button variant="ghost" className="ref-btn text-destructive" onClick={() => void remove(c)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </article>
         ))}
       </div>
       {!rows.length && <p className="admin-empty">{t("Aucun véhicule.", "No vehicles.", "لا توجد سيارات.")}</p>}
+
+      {viewingCar && (
+        <CarDetailsModal
+          car={viewingCar}
+          owner={owners.find((o) => o.id === viewingCar.owner_id)}
+          images={images.filter((i) => i.car_id === viewingCar.id)}
+          onClose={() => setViewing(null)}
+          onEdit={() => {
+            const id = viewingCar.id;
+            setViewing(null);
+            setEditing(id);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function CarDetailsModal({
+  car,
+  owner,
+  images,
+  onClose,
+  onEdit,
+}: {
+  car: Car;
+  owner: { id: string; first_name: string; last_name: string; email: string; phone: string | null } | undefined;
+  images: CarImage[];
+  onClose: () => void;
+  onEdit: () => void;
+}) {
+  const { t, lang } = useI18n();
+  const sortedImages = [...images].sort((a, b) => Number(b.is_cover) - Number(a.is_cover) || a.sort_order - b.sort_order);
+  const [activePhoto, setActivePhoto] = useState<string>(
+    sortedImages[0] ? resolveCarImageUrl(sortedImages[0].storage_path) : fallbackCarImage(car.slug)
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-card border border-border rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative my-auto animate-in fade-in-50 zoom-in-95">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary">
+                {car.category}
+              </span>
+              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${car.active ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
+                {car.active ? t("Publié", "Published", "منشور") : t("Masqué", "Hidden", "مخفي")}
+              </span>
+              {car.featured && (
+                <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/10 text-amber-600 flex items-center gap-1">
+                  <Star className="h-3 w-3 fill-current" /> {t("Coup de cœur", "Featured", "مميزة")}
+                </span>
+              )}
+              {car.is_new_arrival && (
+                <span className="px-2 py-0.5 rounded text-xs font-semibold bg-sky-500/10 text-sky-600 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" /> {t("Nouveauté", "New arrival", "وصل حديثاً")}
+                </span>
+              )}
+            </div>
+            <h2 className="text-2xl font-bold">{car.name}</h2>
+            <p className="text-sm text-muted-foreground">{[car.brand, car.model, car.year].filter(Boolean).join(" · ")} · {car.city || t("Tunisie", "Tunisia", "تونس")}</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Gallery */}
+        <div className="mb-6">
+          <div className="w-full h-72 sm:h-80 rounded-xl overflow-hidden bg-muted mb-2 border border-border">
+            <img src={activePhoto} alt={car.name} className="w-full h-full object-cover" />
+          </div>
+          {sortedImages.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {sortedImages.map((img) => {
+                const url = resolveCarImageUrl(img.storage_path);
+                return (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => setActivePhoto(url)}
+                    className={`h-16 w-24 rounded-lg overflow-hidden flex-none border-2 transition ${activePhoto === url ? 'border-primary ring-2 ring-primary/20' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                  >
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Publisher / Owner info */}
+        <div className="p-4 rounded-xl bg-muted/60 border border-border mb-6">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+            {t("Propriétaire & Publication", "Owner & Publisher", "المالك والناشر")}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="font-bold text-base">{ownerName(owner)}</div>
+              {owner?.email && <div className="text-sm font-mono text-muted-foreground">{owner.email}</div>}
+            </div>
+            {owner?.phone && (
+              <div className="flex items-center gap-2">
+                <a href={telHref(owner.phone)} className="ref-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold hover:border-primary">
+                  <Phone className="h-3.5 w-3.5 text-primary" /> {owner.phone}
+                </a>
+                <a href={waHref(owner.phone)} target="_blank" rel="noreferrer" className="ref-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700">
+                  <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Detailed Specs Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+            <span className="text-xs text-muted-foreground block mb-0.5">{t("Tarif indicatif", "Indicative price", "السعر التقريبي")}</span>
+            <strong className="text-base font-semibold text-primary">{car.price_from ? fmtPrice(car.price_from, lang) : t("Sur demande", "On request", "عند الطلب")}</strong>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+            <span className="text-xs text-muted-foreground block mb-0.5">{t("Capacité", "Capacity", "السعة")}</span>
+            <strong className="text-base font-semibold">{car.seats ? `${car.seats} ${t("places", "seats", "مقاعد")}` : "—"}</strong>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+            <span className="text-xs text-muted-foreground block mb-0.5">{t("Ville de base", "City", "المدينة")}</span>
+            <strong className="text-base font-semibold">{car.city || t("Tunisie", "Tunisia", "تونس")}</strong>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+            <span className="text-xs text-muted-foreground block mb-0.5">{t("Transmission", "Transmission", "ناقل الحركة")}</span>
+            <strong className="text-base font-semibold capitalize">{car.transmission || "Automatique"}</strong>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+            <span className="text-xs text-muted-foreground block mb-0.5">{t("Carburant", "Fuel", "الوقود")}</span>
+            <strong className="text-base font-semibold capitalize">{car.fuel_type || "Essence"}</strong>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+            <span className="text-xs text-muted-foreground block mb-0.5">{t("Couleur", "Color", "اللون")}</span>
+            <strong className="text-base font-semibold">{car.color || "—"}</strong>
+          </div>
+        </div>
+
+        {/* Equipment & Services */}
+        {car.equipment && car.equipment.length > 0 && (
+          <div className="mb-6">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              {t("Équipements & Prestations", "Equipment & Features", "التجهيزات والخدمات")}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {car.equipment.map((eq) => (
+                <span key={eq} className="px-2.5 py-1 rounded-md text-xs bg-muted border border-border">
+                  ✓ {eq}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Description */}
+        {car.description && (
+          <div className="mb-6">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              {t("Description", "Description", "الوصف")}
+            </div>
+            <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line bg-muted/20 p-3 rounded-lg border border-border/40">
+              {car.description}
+            </p>
+          </div>
+        )}
+
+        {/* Availability text */}
+        {car.availability && (
+          <div className="mb-6 text-sm text-muted-foreground">
+            <strong>{t("Disponibilité affichée :", "Availability text:", "نص التوفر :")}</strong> {car.availability}
+          </div>
+        )}
+
+        {/* Footer Actions */}
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <a
+            href={`/vehicules/${car.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="ref-btn inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {t("Voir sur le site client", "View public listing", "معاينة على الموقع")}
+          </a>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="ref-btn" onClick={onClose}>
+              {t("Fermer", "Close", "إغلاق")}
+            </Button>
+            <Button className="ref-btn bg-primary" onClick={onEdit}>
+              {t("Modifier le véhicule", "Edit vehicle", "تعديل السيارة")}
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

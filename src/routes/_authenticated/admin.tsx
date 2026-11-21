@@ -11,7 +11,7 @@ import { fmtPrice, BOOKING_STATUS, PROPOSAL_STATUS, CAR_VALIDATION, SERVICE_TYPE
 import { approvePartner, listClients, reviewChangeRequest, reviewPartner, setCarValidation } from "@/lib/admin.functions";
 import { StatusPill } from "@/components/site-chrome";
 import { NotificationsPanel } from "@/components/notifications-panel";
-import { TransportRequests } from "@/components/admin/transport-requests";
+import { TransportRequests, useOwners, ownerName, telHref, waHref } from "@/components/admin/transport-requests";
 import { LiveOperations } from "@/components/admin/live-operations";
 import { CarCatalog } from "@/components/admin/car-catalog";
 import { labelOf, pick, useI18n, type Tri } from "@/lib/i18n";
@@ -127,13 +127,24 @@ function Filters({ q, setQ, status, setStatus, statuses, extra }: { q: string; s
   );
 }
 
-function Partners({ proposals, refresh }: Ctx) {
+function Partners({ proposals, cars, refresh }: Ctx) {
   const { t, lang, date, dateTime } = useI18n();
   const approve = useServerFn(approvePartner);
   const review = useServerFn(reviewPartner);
-  const [q, setQ] = useState(""); const [st, setSt] = useState(""); const [open, setOpen] = useState<string | null>(null);
+  const { data: owners = [] } = useOwners();
+  const [subTab, setSubTab] = useState<"owners" | "proposals">("owners");
+  const [q, setQ] = useState("");
+  const [st, setSt] = useState("");
+  const [open, setOpen] = useState<string | null>(null);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<{ id: string; note: string; created_at: string }[]>([]);
+
+  const filteredOwners = owners.filter((o) => {
+    if (!q) return true;
+    const myCars = cars.filter((c) => c.owner_id === o.id).map((c) => c.name).join(" ");
+    return `${o.first_name} ${o.last_name} ${o.email} ${o.phone ?? ""} ${myCars}`.toLowerCase().includes(q.toLowerCase());
+  });
+
   const rows = proposals.filter((x) => (!st || x.status === st) && (!q || `${x.first_name} ${x.last_name} ${x.city} ${x.brand} ${x.model}`.toLowerCase().includes(q.toLowerCase())));
   const cur = proposals.find((x) => x.id === open);
   const svc = (list: string[]) => list.map((s) => partnerServiceLabel(s, lang)).join(", ");
@@ -147,68 +158,155 @@ function Partners({ proposals, refresh }: Ctx) {
 
   return (
     <>
-      {cur && (
-        <div className="dossier">
-          <div className="registry-toolbar"><h3>{cur.first_name} {cur.last_name} — {cur.brand} {cur.model}</h3><Button variant="ghost" className="ref-btn" onClick={() => setOpen(null)}>{t("Fermer", "Close", "إغلاق")}</Button></div>
-          <StatusPill label={labelOf(PROPOSAL_STATUS, cur.status, lang)} />
-          <div className="admin-photo-strip">
-            {cur.proposal_images.map((i) => i.kind === "document"
-              ? <a key={i.id} href={urls[i.storage_path]} target="_blank" rel="noreferrer" className="note-row">{t("Document", "Document", "وثيقة")}</a>
-              : <a key={i.id} href={urls[i.storage_path]} target="_blank" rel="noreferrer"><img src={urls[i.storage_path]} alt={i.kind} /></a>)}
+      <div className="registry-tabs mb-6">
+        <Button variant={subTab === "owners" ? "default" : "ghost"} className="ref-btn" onClick={() => { setOpen(null); setSubTab("owners"); }}>
+          {t("Partenaires actifs", "Active partners", "الشركاء النشطون")} ({owners.length})
+        </Button>
+        <Button variant={subTab === "proposals" ? "default" : "ghost"} className="ref-btn" onClick={() => { setOpen(null); setSubTab("proposals"); }}>
+          {t("Candidatures & dossiers", "Applications & proposals", "الملفات والطلبات")} ({proposals.length})
+        </Button>
+      </div>
+
+      {subTab === "owners" && (
+        <div className="registry">
+          <div className="flex flex-wrap gap-3 mb-4 items-center">
+            <input
+              className="admin-search flex-1"
+              placeholder={t("Rechercher un partenaire (nom, e-mail, téléphone, voiture…)", "Search partner (name, email, phone, car…)", "بحث عن شريك (الاسم، البريد، الهاتف، السيارة…)")}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
           </div>
-          <div className="dossier-grid">
-            <div><small>{t("Téléphone", "Phone", "الهاتف")}</small><a href={`tel:${cur.phone}`} dir="ltr">{cur.phone}</a></div>
-            <div><small>{t("E-mail", "Email", "البريد")}</small><a href={`mailto:${cur.email}`}>{cur.email}</a></div>
-            <div><small>{t("Ville / adresse", "City / address", "المدينة / العنوان")}</small>{cur.city} · {cur.address}</div>
-            <div><small>{t("Véhicule", "Vehicle", "السيارة")}</small>{cur.year} · {cur.color} · {cur.vehicle_type ? `${vehicleTypeLabel(cur.vehicle_type, lang)} · ` : ""}{cur.seats} {t("places", "seats", "مقاعد")} · {cur.vehicle_condition}</div>
-            <div><small>{t("Services", "Services", "الخدمات")}</small>{svc(cur.services)}</div>
-            <div><small>{t("Disponibilités / tarif", "Availability / price", "التوفر / السعر")}</small>{cur.availability} · {cur.desired_rate ? fmtPrice(cur.desired_rate, lang) : t("non communiqué", "not given", "غير محدد")}</div>
-            <div className="form-wide"><small>{t("Description", "Description", "الوصف")}</small>{cur.description}</div>
-            {cur.extra_info && <div className="form-wide"><small>{t("Infos complémentaires", "Additional info", "معلومات إضافية")}</small>{cur.extra_info}</div>}
-            {cur.rejection_reason && <div className="form-wide"><small>{t("Motif de refus", "Reason for declining", "سبب الرفض")}</small>{cur.rejection_reason}</div>}
-            {cur.info_request && <div className="form-wide"><small>{t("Compléments demandés", "Info requested", "المعلومات المطلوبة")}</small>{cur.info_request}</div>}
+
+          <div className="table-scroll">
+            <table className="registry-table">
+              <thead>
+                <tr>
+                  <th>{t("Partenaire", "Partner", "الشريك")}</th>
+                  <th>{t("Contact", "Contact", "الاتصال")}</th>
+                  <th>{t("Voitures attribuées", "Assigned vehicles", "السيارات المخصصة")}</th>
+                  <th>{t("Statut", "Status", "الحالة")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOwners.map((o) => {
+                  const myCars = cars.filter((c) => c.owner_id === o.id);
+                  return (
+                    <tr key={o.id}>
+                      <td>
+                        <strong className="block text-base">{o.first_name} {o.last_name}</strong>
+                        {o.email && <small className="text-muted-foreground block font-mono">{o.email}</small>}
+                      </td>
+                      <td>
+                        {o.phone ? (
+                          <div className="flex flex-col gap-1 text-sm">
+                            <a href={telHref(o.phone)} dir="ltr" className="font-semibold text-primary">{o.phone}</a>
+                            <a href={waHref(o.phone)} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground">WhatsApp ↗</a>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+                            {myCars.length} {t("véhicules", "vehicles", "سيارات")}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1 max-w-lg">
+                          {myCars.map((c) => (
+                            <span key={c.id} className="text-xs py-0.5 px-1.5 rounded bg-muted text-foreground border border-border">
+                              {c.name}
+                            </span>
+                          ))}
+                          {!myCars.length && <span className="text-xs text-muted-foreground">{t("Aucune voiture", "No cars", "لا توجد سيارات")}</span>}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                          {t("Actif", "Active", "نشط")}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {!filteredOwners.length && (
+              <p className="admin-empty">
+                {t("Aucun partenaire trouvé.", "No partner found.", "لم يتم العثور على أي شريك.")}
+              </p>
+            )}
           </div>
-          {cur.status !== "approved" && (
-            <div className="action-row mt-4">
-              <Button className="ref-btn" onClick={() => run(async () => { try { const r = await approve({ data: { id: cur.id, origin: window.location.origin } }); if (r.invited) toast.info(t("Invitation envoyée par e-mail au propriétaire", "Invitation emailed to the owner", "تم إرسال الدعوة إلى المالك عبر البريد")); } catch { const { error } = await supabase.rpc("admin_approve_partner", { _id: cur.id }); if (error) throw error; } }, t("Dossier accepté", "Application approved", "تم قبول الملف"), refresh)}>{t("Accepter", "Approve", "قبول")}</Button>
-              <Button variant="outline" className="ref-btn" onClick={() => { const m = window.prompt(t("Motif du refus ?", "Reason for declining?", "سبب الرفض؟"))?.trim(); if (m) run(async () => { try { await review({ data: { id: cur.id, action: "reject", message: m } }); } catch { const { error } = await supabase.rpc("admin_review_partner", { _id: cur.id, _action: "reject", _message: m }); if (error) throw error; } }, t("Dossier refusé", "Application declined", "تم رفض الملف"), refresh); }}>{t("Refuser", "Decline", "رفض")}</Button>
-              <Button variant="outline" className="ref-btn" onClick={() => { const m = window.prompt(t("Informations à demander ?", "What information do you need?", "ما المعلومات المطلوبة؟"))?.trim(); if (m) run(async () => { try { await review({ data: { id: cur.id, action: "info", message: m } }); } catch { const { error } = await supabase.rpc("admin_review_partner", { _id: cur.id, _action: "info", _message: m }); if (error) throw error; } }, t("Demande envoyée", "Request sent", "تم إرسال الطلب"), refresh); }}>{t("Demander des compléments", "Request more info", "طلب معلومات إضافية")}</Button>
-              <Button asChild variant="ghost" className="ref-btn"><a href={`mailto:${cur.email}?subject=Far7tek`}>{t("Contacter", "Contact", "تواصل")}</a></Button>
-            </div>
-          )}
-          <h3 className="mt-6">{t("Notes internes", "Internal notes", "ملاحظات داخلية")}</h3>
-          {notes.map((n) => <div key={n.id} className="note-row"><small>{dateTime(n.created_at)}</small><p>{n.note}</p></div>)}
-          <form className="ref-form mt-3" onSubmit={async (e): Promise<void> => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const note = String(new FormData(form).get("note") ?? "").trim().slice(0, 2000);
-            if (!note) return;
-            const { error } = await supabase.from("admin_notes").insert({ car_proposal_id: cur.id, note, author_id: (await supabase.auth.getUser()).data.user!.id });
-            if (error) { toast.error(t("Note non enregistrée", "Note not saved", "لم تُحفظ الملاحظة")); return; }
-            form.reset(); openDossier(cur.id);
-          }}>
-            <label className="form-field form-wide"><span>{t("Ajouter une note", "Add a note", "إضافة ملاحظة")}</span><textarea name="note" /></label>
-            <Button className="ref-btn">{t("Enregistrer la note", "Save note", "حفظ الملاحظة")}</Button>
-          </form>
         </div>
       )}
-      <div className="registry">
-        <Filters q={q} setQ={setQ} status={st} setStatus={setSt} statuses={{
-          pending: PROPOSAL_STATUS["pending"]!, reviewing: PROPOSAL_STATUS["reviewing"]!, info_requested: PROPOSAL_STATUS["info_requested"]!,
-          approved: ["Actifs", "Active", "نشط"], rejected: PROPOSAL_STATUS["rejected"]!,
-        }} />
-        <div className="table-scroll"><table className="registry-table">
-          <thead><tr><th>{t("Propriétaire", "Owner", "المالك")}</th><th>{t("Téléphone", "Phone", "الهاتف")}</th><th>{t("Ville", "City", "المدينة")}</th><th>{t("Véhicule", "Vehicle", "السيارة")}</th><th>{t("Services", "Services", "الخدمات")}</th><th>{t("Soumis le", "Submitted", "تاريخ الإرسال")}</th><th>{t("Statut", "Status", "الحالة")}</th><th></th></tr></thead>
-          <tbody>{rows.map((x) => (
-            <tr key={x.id}>
-              <td><strong>{x.first_name} {x.last_name}</strong></td><td dir="ltr">{x.phone}</td><td>{x.city}</td><td>{x.brand} {x.model}</td>
-              <td>{svc(x.services)}</td><td>{date(x.created_at)}</td>
-              <td><StatusPill label={labelOf(PROPOSAL_STATUS, x.status, lang)} /></td>
-              <td><Button variant="outline" className="ref-btn" onClick={() => openDossier(x.id)}>{t("Consulter", "Open", "عرض")}</Button></td>
-            </tr>
-          ))}</tbody>
-        </table>{!rows.length && <p className="admin-empty">{t("Aucun dossier.", "No applications.", "لا توجد ملفات.")}</p>}</div>
-      </div>
+
+      {subTab === "proposals" && (
+        <>
+          {cur && (
+            <div className="dossier">
+              <div className="registry-toolbar"><h3>{cur.first_name} {cur.last_name} — {cur.brand} {cur.model}</h3><Button variant="ghost" className="ref-btn" onClick={() => setOpen(null)}>{t("Fermer", "Close", "إغلاق")}</Button></div>
+              <StatusPill label={labelOf(PROPOSAL_STATUS, cur.status, lang)} />
+              <div className="admin-photo-strip">
+                {cur.proposal_images.map((i) => i.kind === "document"
+                  ? <a key={i.id} href={urls[i.storage_path]} target="_blank" rel="noreferrer" className="note-row">{t("Document", "Document", "وثيقة")}</a>
+                  : <a key={i.id} href={urls[i.storage_path]} target="_blank" rel="noreferrer"><img src={urls[i.storage_path]} alt={i.kind} /></a>)}
+              </div>
+              <div className="dossier-grid">
+                <div><small>{t("Téléphone", "Phone", "الهاتف")}</small><a href={`tel:${cur.phone}`} dir="ltr">{cur.phone}</a></div>
+                <div><small>{t("E-mail", "Email", "البريد")}</small><a href={`mailto:${cur.email}`}>{cur.email}</a></div>
+                <div><small>{t("Ville / adresse", "City / address", "المدينة / العنوان")}</small>{cur.city} · {cur.address}</div>
+                <div><small>{t("Véhicule", "Vehicle", "السيارة")}</small>{cur.year} · {cur.color} · {cur.vehicle_type ? `${vehicleTypeLabel(cur.vehicle_type, lang)} · ` : ""}{cur.seats} {t("places", "seats", "مقاعد")} · {cur.vehicle_condition}</div>
+                <div><small>{t("Services", "Services", "الخدمات")}</small>{svc(cur.services)}</div>
+                <div><small>{t("Disponibilités / tarif", "Availability / price", "التوفر / السعر")}</small>{cur.availability} · {cur.desired_rate ? fmtPrice(cur.desired_rate, lang) : t("non communiqué", "not given", "غير محدد")}</div>
+                <div className="form-wide"><small>{t("Description", "Description", "الوصف")}</small>{cur.description}</div>
+                {cur.extra_info && <div className="form-wide"><small>{t("Infos complémentaires", "Additional info", "معلومات إضافية")}</small>{cur.extra_info}</div>}
+                {cur.rejection_reason && <div className="form-wide"><small>{t("Motif de refus", "Reason for declining", "سبب الرفض")}</small>{cur.rejection_reason}</div>}
+                {cur.info_request && <div className="form-wide"><small>{t("Compléments demandés", "Info requested", "المعلومات المطلوبة")}</small>{cur.info_request}</div>}
+              </div>
+              {cur.status !== "approved" && (
+                <div className="action-row mt-4">
+                  <Button className="ref-btn" onClick={() => run(async () => { try { const r = await approve({ data: { id: cur.id, origin: window.location.origin } }); if (r.invited) toast.info(t("Invitation envoyée par e-mail au propriétaire", "Invitation emailed to the owner", "تم إرسال الدعوة إلى المالك عبر البريد")); } catch { const { error } = await supabase.rpc("admin_approve_partner", { _id: cur.id }); if (error) throw error; } }, t("Dossier accepté", "Application approved", "تم قبول الملف"), refresh)}>{t("Accepter", "Approve", "قبول")}</Button>
+                  <Button variant="outline" className="ref-btn" onClick={() => { const m = window.prompt(t("Motif du refus ?", "Reason for declining?", "سبب الرفض؟"))?.trim(); if (m) run(async () => { try { await review({ data: { id: cur.id, action: "reject", message: m } }); } catch { const { error } = await supabase.rpc("admin_review_partner", { _id: cur.id, _action: "reject", _message: m }); if (error) throw error; } }, t("Dossier refusé", "Application declined", "تم رفض الملف"), refresh); }}>{t("Refuser", "Decline", "رفض")}</Button>
+                  <Button variant="outline" className="ref-btn" onClick={() => { const m = window.prompt(t("Informations à demander ?", "What information do you need?", "ما المعلومات المطلوبة؟"))?.trim(); if (m) run(async () => { try { await review({ data: { id: cur.id, action: "info", message: m } }); } catch { const { error } = await supabase.rpc("admin_review_partner", { _id: cur.id, _action: "info", _message: m }); if (error) throw error; } }, t("Demande envoyée", "Request sent", "تم إرسال الطلب"), refresh); }}>{t("Demander des compléments", "Request more info", "طلب معلومات إضافية")}</Button>
+                  <Button asChild variant="ghost" className="ref-btn"><a href={`mailto:${cur.email}?subject=Far7tek`}>{t("Contacter", "Contact", "تواصل")}</a></Button>
+                </div>
+              )}
+              <h3 className="mt-6">{t("Notes internes", "Internal notes", "ملاحظats داخلية")}</h3>
+              {notes.map((n) => <div key={n.id} className="note-row"><small>{dateTime(n.created_at)}</small><p>{n.note}</p></div>)}
+              <form className="ref-form mt-3" onSubmit={async (e): Promise<void> => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const note = String(new FormData(form).get("note") ?? "").trim().slice(0, 2000);
+                if (!note) return;
+                const { error } = await supabase.from("admin_notes").insert({ car_proposal_id: cur.id, note, author_id: (await supabase.auth.getUser()).data.user!.id });
+                if (error) { toast.error(t("Note non enregistrée", "Note not saved", "لم تُحفظ الملاحظة")); return; }
+                form.reset(); openDossier(cur.id);
+              }}>
+                <label className="form-field form-wide"><span>{t("Ajouter une note", "Add a note", "إضافة ملاحظة")}</span><textarea name="note" /></label>
+                <Button className="ref-btn">{t("Enregistrer la note", "Save note", "حفظ الملاحظة")}</Button>
+              </form>
+            </div>
+          )}
+          <div className="registry">
+            <Filters q={q} setQ={setQ} status={st} setStatus={setSt} statuses={{
+              pending: PROPOSAL_STATUS["pending"]!, reviewing: PROPOSAL_STATUS["reviewing"]!, info_requested: PROPOSAL_STATUS["info_requested"]!,
+              approved: ["Actifs", "Active", "نشط"], rejected: PROPOSAL_STATUS["rejected"]!,
+            }} />
+            <div className="table-scroll"><table className="registry-table">
+              <thead><tr><th>{t("Propriétaire", "Owner", "المالك")}</th><th>{t("Téléphone", "Phone", "الهاتف")}</th><th>{t("Ville", "City", "المدينة")}</th><th>{t("Véhicule", "Vehicle", "السيارة")}</th><th>{t("Services", "Services", "الخدمات")}</th><th>{t("Soumis le", "Submitted", "تاريخ الإرسال")}</th><th>{t("Statut", "Status", "الحالة")}</th><th></th></tr></thead>
+              <tbody>{rows.map((x) => (
+                <tr key={x.id}>
+                  <td><strong>{x.first_name} {x.last_name}</strong></td><td dir="ltr">{x.phone}</td><td>{x.city}</td><td>{x.brand} {x.model}</td>
+                  <td>{svc(x.services)}</td><td>{date(x.created_at)}</td>
+                  <td><StatusPill label={labelOf(PROPOSAL_STATUS, x.status, lang)} /></td>
+                  <td><Button variant="outline" className="ref-btn" onClick={() => openDossier(x.id)}>{t("Consulter", "Open", "عرض")}</Button></td>
+                </tr>
+              ))}</tbody>
+            </table>{!rows.length && <p className="admin-empty">{t("Aucun dossier.", "No applications.", "لا توجد ملفات.")}</p>}</div>
+          </div>
+        </>
+      )}
     </>
   );
 }

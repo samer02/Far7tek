@@ -20,7 +20,25 @@ type Car = Tables<"cars">;
 export type Owner = { id: string; first_name: string; last_name: string; phone: string | null; email: string };
 
 export function useOwners() {
-  return useQuery({ queryKey: ["adm-owners"], queryFn: () => call<Owner[]>(supabase.rpc("admin_list_owners")) });
+  return useQuery({
+    queryKey: ["adm-owners"],
+    queryFn: async () => {
+      try {
+        const res = await call<Owner[]>(supabase.rpc("admin_list_owners"));
+        if (res && res.length) return res;
+      } catch (err) {
+        console.warn("admin_list_owners rpc fallback to profiles:", err);
+      }
+      const { data: profs } = await supabase.from("profiles").select("id, first_name, last_name, phone");
+      return (profs ?? []).map((p) => ({
+        id: p.id,
+        first_name: p.first_name ?? "",
+        last_name: p.last_name ?? "",
+        phone: p.phone,
+        email: "",
+      }));
+    },
+  });
 }
 export const ownerName = (o: Owner | undefined) => (o ? `${o.first_name} ${o.last_name}`.trim() || o.email : "—");
 export const telHref = (phone: string) => `tel:${phone.replace(/[^+0-9]/g, "")}`;
